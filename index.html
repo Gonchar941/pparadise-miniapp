@@ -19,7 +19,6 @@
     .header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:5}
     .brand{font-weight:700;letter-spacing:.4px;font-size:18px}
     .actions{display:flex;gap:8px;align-items:center}
-    .badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--brand);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
 
     .content{padding:18px 16px 28px;max-width:980px;margin:0 auto}
     .hero{text-align:center;padding:28px 8px}
@@ -52,7 +51,7 @@
     .cat-card.noimg{background:linear-gradient(140deg, color-mix(in oklab, var(--beige) 55%, transparent), var(--card));display:grid;place-items:end start;padding:12px}
     .cat-card.noimg .cat-title,.cat-card.noimg .cat-sub{color:var(--text);text-shadow:none}
 
-    /* ===== FULLSCREEN CATEGORY SHEET ===== */
+    /* ===== FULLSCREEN CATEGORY SHEET (без корзины) ===== */
     .sheet{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;transform:translateY(6%);pointer-events:none;transition:opacity .18s ease,transform .22s ease}
     .sheet.open{opacity:1;transform:translateY(0);pointer-events:auto}
     .sheet .bar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);z-index:2}
@@ -68,8 +67,6 @@
     .dish .name{font-weight:700}
     .dish .row{display:flex;justify-content:space-between;align-items:center}
     .price{font-weight:700}
-    .qty{display:flex;align-items:center;gap:8px}
-    .iconbtn{width:30px;height:30px;border-radius:10px;border:1px solid var(--border);background:transparent;display:grid;place-items:center;cursor:pointer}
   </style>
 </head>
 <body>
@@ -77,7 +74,6 @@
     <header class="header">
       <div class="brand">Paradise</div>
       <div class="actions">
-        <span id="cartBadge" class="badge">0</span>
         <button id="themeToggle" class="btn" type="button">Тема</button>
       </div>
     </header>
@@ -165,7 +161,7 @@
     </footer>
   </div>
 
-  <!-- ПАНЕЛЬ КАТЕГОРИИ (второй уровень) -->
+  <!-- ПАНЕЛЬ КАТЕГОРИИ (второй уровень, только просмотр блюд) -->
   <div id="sheet" class="sheet" aria-hidden="true">
     <div class="bar">
       <button id="backBtn" class="btn" type="button">← Назад</button>
@@ -181,7 +177,6 @@
       const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
       const root = document.documentElement;
       const THEME_KEY = "paradise_theme";
-      const cartBadge = document.getElementById('cartBadge');
 
       // ====== ТЕМА
       function setTheme(theme) {
@@ -201,36 +196,26 @@
       // ====== TELEGRAM INIT
       const envNote = document.getElementById("envNote");
       try {
-        if (tg) {
-          tg.ready(); tg.expand();
-          envNote.textContent = "Открыто в Telegram WebApp";
-        } else envNote.textContent = "Открыто в обычном браузере (это нормально)";
+        if (tg) { tg.ready(); tg.expand(); envNote.textContent = "Открыто в Telegram WebApp"; }
+        else    { envNote.textContent = "Открыто в обычном браузере (это нормально)"; }
       } catch (e) { envNote.textContent = "Открыто в браузере"; }
 
-      // ====== КОРЗИНА (счётчик)
-      const CART_KEY = "paradise_cart";
-      function getCart(){ try{return JSON.parse(localStorage.getItem(CART_KEY) || "[]");}catch(_){return [];} }
-      function setCart(arr){ localStorage.setItem(CART_KEY, JSON.stringify(arr)); updateBadge(); updateMainButton(); }
-      function addToCart(item){ const c=getCart(); c.push(item); setCart(c); }
-      function updateBadge(){ cartBadge.textContent = getCart().length; }
-      updateBadge();
-
-      // ====== ДАННЫЕ МЕНЮ (пример — можно менять названия/цены/картинки)
+      // ====== ДАННЫЕ МЕНЮ (при желании меняй названия/цены/фото)
       const MENU = {
         salads: {
           title: "Салаты",
           items: [
-            {id:"salad-greek",    name:"Греческий",    price:350, img:"salad-greek.webp"},
-            {id:"salad-caesar",   name:"Цезарь с курицей", price:420, img:"salad-caesar.webp"},
-            {id:"salad-olivier",  name:"Оливье",       price:320, img:"salad-olivier.webp"},
+            {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
+            {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
+            {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
           ]
         },
         hot: {
           title: "Горячее",
           items: [
-            {id:"hot-steak",  name:"Стейк из говядины", price:980, img:"hot-steak.webp"},
-            {id:"hot-pasta",  name:"Паста Карбонара",   price:520, img:"hot-pasta.webp"},
-            {id:"hot-salmon", name:"Лосось на гриле",   price:890, img:"hot-salmon.webp"},
+            {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
+            {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
+            {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
           ]
         },
         desserts: {
@@ -244,14 +229,14 @@
         drinks: {
           title: "Напитки",
           items: [
-            {id:"drink-raf",       name:"Раф ванильный", price:260, img:"drink-raf.webp"},
-            {id:"drink-citrusade", name:"Цитрусовый лимонад", price:240, img:"drink-citrusade.webp"},
-            {id:"drink-mojito",    name:"Мохито б/а",    price:250, img:"drink-mojito.webp"},
+            {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
+            {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
+            {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
           ]
         }
       };
 
-      // ====== ВТОРОЙ УРОВЕНЬ — ПАНЕЛЬ КАТЕГОРИИ
+      // ====== ВТОРОЙ УРОВЕНЬ — ПАНЕЛЬ КАТЕГОРИИ (только просмотр)
       const sheet = document.getElementById('sheet');
       const sheetTitle = document.getElementById('sheetTitle');
       const dishGrid = document.getElementById('dishGrid');
@@ -268,70 +253,28 @@
             <div class="pic"><img src="${item.img}" alt="${item.name}" loading="lazy"></div>
             <div class="body">
               <div class="name">${item.name}</div>
-              <div class="row">
-                <div class="price">${item.price} ₽</div>
-                <div class="qty">
-                  <button class="iconbtn" data-action="minus">–</button>
-                  <span class="count">0</span>
-                  <button class="iconbtn" data-action="plus">+</button>
-                </div>
-              </div>
-              <button class="btn primary" data-action="add">Добавить</button>
+              <div class="row"><div class="price">${item.price} ₽</div></div>
             </div>
           `;
           const img = card.querySelector('img');
           img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
-          let count = 0;
-          card.addEventListener('click', (e)=>{
-            const action = e.target.getAttribute('data-action');
-            if (!action) return;
-            if (action==='plus'){ count++; card.querySelector('.count').textContent = count; }
-            if (action==='minus'){ count=Math.max(0,count-1); card.querySelector('.count').textContent = count; }
-            if (action==='add'){
-              const qty = Math.max(1, count || 1);
-              addToCart({id:item.id, name:item.name, price:item.price, qty});
-              count = 0; card.querySelector('.count').textContent = 0;
-            }
-          });
           dishGrid.appendChild(card);
         });
 
         sheet.classList.add('open');
         sheet.setAttribute('aria-hidden','false');
         document.body.style.overflow='hidden';
-        updateMainButton();
       }
       function closeSheet(){
         sheet.classList.remove('open');
         sheet.setAttribute('aria-hidden','true');
         document.body.style.overflow='';
-        updateMainButton();
       }
 
       // Клик по карточке категории
       document.querySelectorAll('.cat-card').forEach(a=>{
         a.addEventListener('click', ()=> openSheet(a.dataset.cat));
       });
-
-      // ====== Telegram MainButton (оформление заказа)
-      function updateMainButton(){
-        if (!tg) return;
-        const total = getCart().length;
-        if (total>0){
-          tg.MainButton.setText(`Оформить заказ (${total})`);
-          tg.MainButton.onClick(()=>{
-            const payload = {type:"order", items:getCart()};
-            try { tg.sendData(JSON.stringify(payload)); } catch(_){}
-            tg.showAlert("Заказ отправлен (демо). Подключим менеджера на следующем шаге.");
-            // Очистить корзину?
-            // setCart([]);
-          });
-          tg.MainButton.show();
-        } else {
-          tg.MainButton.hide();
-        }
-      }
-      updateMainButton();
 
       // ====== Разное
       const y = document.getElementById("year");
