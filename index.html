@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Paradise — Mini App</title>
+
+  <!-- Telegram SDK (не обязателен для обычного браузера, но полезен в WebApp) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root { --bg:#ffffff; --text:#0f0f0f; --muted:#6b7280; --card:#f7f7f8; --border:#e5e7eb; --primary:#111827; }
+    html[data-theme="dark"] { --bg:#0b0b0c; --text:#f3f4f6; --muted:#9ca3af; --card:#141417; --border:#22242a; --primary:#f3f4f6; }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--text)}
+    .page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg)}
+    .brand{font-weight:700;letter-spacing:.4px;font-size:18px}
+    .actions{display:flex;gap:8px}
+    .content{padding:18px 16px 28px;max-width:980px;margin:0 auto}
+    .hero{text-align:center;padding:28px 8px}
+    .hero h1{margin:0 0 6px;font-size:28px}
+    .subtitle{margin:0;color:var(--muted)}
+    .nav{margin:18px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .grid{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media(min-width:720px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;min-height:110px;transition:transform .16s ease, background .2s ease}
+    .card:hover{transform:translateY(-2px)}
+    .footer{padding:14px 16px;color:var(--muted);border-top:1px solid var(--border);text-align:center;background:var(--bg)}
+    .btn{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;transition:background .15s ease,border-color .2s ease}
+    .btn:hover{background:var(--card)}
+    .btn.primary{background:var(--primary);color:var(--bg);border-color:var(--primary)}
+    .section{margin-top:26px}
+    .section h2{margin:0 0 10px;font-size:20px}
+    .muted{color:var(--muted)}
+    input,select,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;width:100%;outline:none}
+    form{display:grid;gap:10px}
+    .notice{margin-top:10px;font-size:13px;color:var(--muted);text-align:center}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="brand">Paradise</div>
+      <div class="actions">
+        <button id="themeToggle" class="btn" type="button">Тема</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="hero">
+        <h1>Добро пожаловать в Paradise</h1>
+        <p class="subtitle">Премиум · минимализм · вкус</p>
+        <div class="nav">
+          <a class="btn primary" href="#menu">Меню</a>
+          <a class="btn" href="#booking">Бронирование</a>
+          <a class="btn" href="#promo">Акции</a>
+          <a class="btn" href="#contacts">Контакты</a>
+        </div>
+        <div id="envNote" class="notice"></div>
+      </section>
+
+      <section id="menu" class="section">
+        <h2>Меню</h2>
+        <p class="muted">Скоро добавим карточки блюд, категории и фото.</p>
+        <div class="grid">
+          <div class="card"><strong>Салаты</strong><br><span class="muted">Лёгкие и свежие</span></div>
+          <div class="card"><strong>Горячее</strong><br><span class="muted">Горячие блюда Paradise</span></div>
+          <div class="card"><strong>Десерты</strong><br><span class="muted">Нежные сладости</span></div>
+          <div class="card"><strong>Напитки</strong><br><span class="muted">Классика и авторские</span></div>
+        </div>
+      </section>
+
+      <section id="booking" class="section">
+        <h2>Бронирование</h2>
+        <p class="muted">Эта форма демо — просто показывает, что страница работает.</p>
+        <form onsubmit="event.preventDefault(); alert('Заявка отправлена (демо)');">
+          <input placeholder="Имя" required />
+          <input placeholder="Телефон" required />
+          <input type="date" required />
+          <input type="time" required />
+          <select>
+            <option>1 гость</option><option>2 гостя</option><option>3 гостя</option>
+            <option>4 гостя</option><option>5 гостей</option><option>6 гостей</option>
+          </select>
+          <textarea placeholder="Пожелания (у окна, тихая зона)…"></textarea>
+          <button class="btn primary" type="submit">Отправить (демо)</button>
+        </form>
+      </section>
+
+      <section id="promo" class="section">
+        <h2>Акции</h2>
+        <div class="grid">
+          <div class="card"><strong>Сет «Друзья»</strong><br><span class="muted">-20% по будням 12–16</span></div>
+          <div class="card"><strong>Авторский десерт</strong><br><span class="muted">в подарок к кофейному сету</span></div>
+        </div>
+      </section>
+
+      <section id="contacts" class="section">
+        <h2>Контакты</h2>
+        <p><strong>Адрес:</strong> Донецк, Paradise</p>
+        <p><strong>Телефон:</strong> <a href="tel:+79990000000">+7 (999) 000-00-00</a></p>
+        <p><strong>Время работы:</strong> 11:00–23:00</p>
+        <p class="muted">Карту и точные данные подставим позже.</p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      © <span id="year"></span> Paradise. Донецк.
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+      const root = document.documentElement;
+      const THEME_KEY = "paradise_theme";
+
+      function setTheme(theme) {
+        root.setAttribute("data-theme", theme);
+        localStorage.setItem(THEME_KEY, theme);
+        try { if (tg) tg.setHeaderColor(theme === "dark" ? "#0b0b0c" : "#ffffff"); } catch (e) {}
+      }
+
+      // 1) Тема: восстановить сохранённую или взять из системы/телеграма
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) setTheme(saved);
+      else {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? "dark" : "light");
+      }
+
+      // 2) Telegram init (если внутри Telegram)
+      const envNote = document.getElementById("envNote");
+      try {
+        if (tg) {
+          tg.ready();
+          tg.expand();
+          const scheme = tg.colorScheme;
+          if (!saved && (scheme === "dark" || scheme === "light")) setTheme(scheme);
+          if (envNote) envNote.textContent = "Открыто в Telegram WebApp";
+        } else {
+          if (envNote) envNote.textContent = "Открыто в обычном браузере (это нормально)";
+        }
+      } catch (e) {
+        if (envNote) envNote.textContent = "Открыто в браузере";
+      }
+
+      // 3) Переключатель темы
+      const btn = document.getElementById("themeToggle");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          const current = root.getAttribute("data-theme") || "light";
+          setTheme(current === "light" ? "dark" : "light");
+        });
+      }
+
+      // 4) Год в футере
+      const y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // Консольная подсказка для отладки
+      console.log("Paradise Mini App loaded. Telegram:", !!tg);
+    })();
+  </script>
+</body>
+</html>
