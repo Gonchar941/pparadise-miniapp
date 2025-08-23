@@ -12,6 +12,7 @@
 
     *{box-sizing:border-box}
     html,body{height:100%}
+    html{scroll-behavior:smooth}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:var(--bg);color:var(--text)}
     a{text-decoration:none;color:inherit}
 
@@ -21,8 +22,12 @@
     .actions{display:flex;gap:8px;align-items:center}
 
     .content{padding:18px 16px 28px;max-width:980px;margin:0 auto}
-    .hero{text-align:center;padding:28px 8px}
-    .hero h1{margin:0 0 6px;font-size:28px}
+    .hero{
+      text-align:center;padding:60px 16px;border-radius:14px;margin-top:8px;
+      /* Положи рядом hero-bg.jpg — фон появится автоматически */
+      background: url("hero-bg.jpg") center/cover no-repeat, var(--card);
+    }
+    .hero h1{margin:0 0 10px;font-size:32px}
     .subtitle{margin:0;color:var(--muted)}
     .nav{margin:18px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .grid{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -33,8 +38,9 @@
     .btn{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;transition:background .15s ease,border-color .2s ease}
     .btn:hover{background:var(--card)}
     .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .btn.ghost{background:transparent}
     .section{margin-top:26px}
-    .section h2{margin:0 0 10px;font-size:20px}
+    .section h2{margin:0 0 10px;font-size:22px}
     .muted{color:var(--muted)}
     input,select,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;width:100%;outline:none}
     form{display:grid;gap:10px}
@@ -51,7 +57,7 @@
     .cat-card.noimg{background:linear-gradient(140deg, color-mix(in oklab, var(--beige) 55%, transparent), var(--card));display:grid;place-items:end start;padding:12px}
     .cat-card.noimg .cat-title,.cat-card.noimg .cat-sub{color:var(--text);text-shadow:none}
 
-    /* ===== FULLSCREEN CATEGORY SHEET (без корзины) ===== */
+    /* FULLSCREEN CATEGORY SHEET (второй уровень) */
     .sheet{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;transform:translateY(6%);pointer-events:none;transition:opacity .18s ease,transform .22s ease}
     .sheet.open{opacity:1;transform:translateY(0);pointer-events:auto}
     .sheet .bar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);z-index:2}
@@ -67,6 +73,25 @@
     .dish .name{font-weight:700}
     .dish .row{display:flex;justify-content:space-between;align-items:center}
     .price{font-weight:700}
+
+    /* NEWS */
+    .news{display:grid;gap:12px}
+    .news-card{border:1px solid var(--border);background:var(--card);border-radius:14px;padding:14px}
+    .news-head{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:transparent}
+    .news-date{font-size:12px;color:var(--muted)}
+
+    /* GALLERY + LIGHTBOX */
+    .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    @media(min-width:720px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);cursor:pointer}
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:70}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px}
+
+    /* REVEAL ANIMATIONS */
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease, transform .5s ease}
+    .reveal.in{opacity:1;transform:none}
   </style>
 </head>
 <body>
@@ -74,55 +99,53 @@
     <header class="header">
       <div class="brand">Paradise</div>
       <div class="actions">
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://t.me/paradise">TG</a>
+        <a class="btn ghost" target="_blank" rel="noopener" href="https://vk.com/paradise">VK</a>
         <button id="themeToggle" class="btn" type="button">Тема</button>
       </div>
     </header>
 
     <main class="content">
-      <section class="hero">
+      <section class="hero reveal">
         <h1>Добро пожаловать в Paradise</h1>
         <p class="subtitle">Премиум · минимализм · вкус</p>
         <div class="nav">
           <a class="btn primary" href="#menu">Меню</a>
           <a class="btn" href="#booking">Бронирование</a>
+          <a class="btn" href="#news">Новости</a>
+          <a class="btn" href="#gallery">Галерея</a>
           <a class="btn" href="#promo">Акции</a>
           <a class="btn" href="#contacts">Контакты</a>
         </div>
         <div id="envNote" class="notice"></div>
       </section>
 
-      <section id="menu" class="section">
+      <!-- Меню -->
+      <section id="menu" class="section reveal">
         <h2>Меню</h2>
         <p class="muted">Выберите категорию:</p>
-
         <div class="grid">
           <a class="cat-card" data-cat="salads" href="javascript:void(0)">
-            <img src="menu-salads.webp" alt="Салаты"
-                 onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
+            <img src="menu-salads.webp" alt="Салаты" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
             <div class="cat-meta"><p class="cat-title">Салаты</p><p class="cat-sub">Лёгкие и свежие</p></div>
           </a>
-
           <a class="cat-card" data-cat="hot" href="javascript:void(0)">
-            <img src="menu-hot.webp" alt="Горячее"
-                 onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
+            <img src="menu-hot.webp" alt="Горячее" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
             <div class="cat-meta"><p class="cat-title">Горячее</p><p class="cat-sub">Классические хиты</p></div>
           </a>
-
           <a class="cat-card" data-cat="desserts" href="javascript:void(0)">
-            <img src="menu-desserts.webp" alt="Десерты"
-                 onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
+            <img src="menu-desserts.webp" alt="Десерты" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
             <div class="cat-meta"><p class="cat-title">Десерты</p><p class="cat-sub">Нежные сладости</p></div>
           </a>
-
           <a class="cat-card" data-cat="drinks" href="javascript:void(0)">
-            <img src="menu-drinks.webp" alt="Напитки"
-                 onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
+            <img src="menu-drinks.webp" alt="Напитки" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
             <div class="cat-meta"><p class="cat-title">Напитки</p><p class="cat-sub">Классика и авторские</p></div>
           </a>
         </div>
       </section>
 
-      <section id="booking" class="section">
+      <!-- Бронь -->
+      <section id="booking" class="section reveal">
         <h2>Бронирование</h2>
         <p class="muted">Эта форма демо — просто показывает, что страница работает.</p>
         <form onsubmit="event.preventDefault(); alert('Заявка отправлена (демо)');">
@@ -139,7 +162,48 @@
         </form>
       </section>
 
-      <section id="promo" class="section">
+      <!-- Новости -->
+      <section id="news" class="section reveal">
+        <h2>Новости</h2>
+        <div class="news">
+          <article class="news-card">
+            <div class="news-head">
+              <span class="badge">Новинка</span>
+              <span class="news-date">20.08</span>
+            </div>
+            <h3 style="margin:0 0 6px">Новый авторский десерт «Paradise Gold»</h3>
+            <p class="muted">Нежная текстура манго-мусса с ванильным бисквитом. Доступно с этой недели.</p>
+          </article>
+
+          <article class="news-card">
+            <div class="news-head">
+              <span class="badge">Событие</span>
+              <span class="news-date">22.08</span>
+            </div>
+            <h3 style="margin:0 0 6px">Живая музыка в пятницу</h3>
+            <p class="muted">Акустический вечер, начало в 19:00. Бронь столиков — во вкладке «Бронирование».</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Галерея -->
+      <section id="gallery" class="section reveal">
+        <h2>Галерея</h2>
+        <p class="muted">Фотографии интерьера и подачи.</p>
+        <div class="gallery" id="galleryGrid">
+          <!-- Положи рядом эти файлы (можно заменить):
+               gallery-1.webp ... gallery-6.webp -->
+          <img src="gallery-1.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+          <img src="gallery-2.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+          <img src="gallery-3.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+          <img src="gallery-4.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+          <img src="gallery-5.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+          <img src="gallery-6.webp" alt="Paradise" loading="lazy" onerror="this.remove()">
+        </div>
+      </section>
+
+      <!-- Акции -->
+      <section id="promo" class="section reveal">
         <h2>Акции</h2>
         <div class="grid">
           <div class="card"><strong>Сет «Друзья»</strong><br><span class="muted">-20% по будням 12–16</span></div>
@@ -147,12 +211,17 @@
         </div>
       </section>
 
-      <section id="contacts" class="section">
+      <!-- Контакты -->
+      <section id="contacts" class="section reveal">
         <h2>Контакты</h2>
         <p><strong>Адрес:</strong> Донецк, Paradise</p>
         <p><strong>Телефон:</strong> <a href="tel:+79990000000">+7 (999) 000-00-00</a></p>
         <p><strong>Время работы:</strong> 11:00–23:00</p>
-        <p class="muted">Карту и точные данные подставим позже.</p>
+        <div class="nav" style="margin-top:10px">
+          <a class="btn" target="_blank" rel="noopener" href="https://yandex.ru/maps/?whatshere%5Bpoint%5D=37.802%2C48.002&whatshere%5Bzoom%5D=16">Открыть навигатор</a>
+          <a class="btn primary" target="_blank" rel="noopener" href="https://t.me/paradise">Подписаться в TG</a>
+          <a class="btn" target="_blank" rel="noopener" href="https://vk.com/paradise">Мы во ВК</a>
+        </div>
       </section>
     </main>
 
@@ -161,7 +230,7 @@
     </footer>
   </div>
 
-  <!-- ПАНЕЛЬ КАТЕГОРИИ (второй уровень, только просмотр блюд) -->
+  <!-- ПАНЕЛЬ КАТЕГОРИИ -->
   <div id="sheet" class="sheet" aria-hidden="true">
     <div class="bar">
       <button id="backBtn" class="btn" type="button">← Назад</button>
@@ -172,115 +241,134 @@
     </div>
   </div>
 
+  <!-- ЛАЙТБОКС -->
+  <div id="lightbox" class="lightbox" aria-hidden="true"><img alt=""></div>
+
   <script>
-    (function () {
-      const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-      const root = document.documentElement;
-      const THEME_KEY = "paradise_theme";
+  (function () {
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    const root = document.documentElement;
+    const THEME_KEY = "paradise_theme";
 
-      // ====== ТЕМА
-      function setTheme(theme) {
-        root.setAttribute("data-theme", theme);
-        localStorage.setItem(THEME_KEY, theme);
-        try { if (tg) tg.setHeaderColor(theme === "dark" ? "#0b0b0c" : "#ffffff"); } catch (e) {}
-      }
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved) setTheme(saved);
-      else setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+    /* ===== ТЕМА ===== */
+    function setTheme(theme) {
+      root.setAttribute("data-theme", theme);
+      localStorage.setItem(THEME_KEY, theme);
+      try { if (tg) tg.setHeaderColor(theme === "dark" ? "#0b0b0c" : "#ffffff"); } catch (e) {}
+    }
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) setTheme(saved);
+    else setTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
 
-      document.getElementById("themeToggle")?.addEventListener("click", () => {
-        const current = root.getAttribute("data-theme") || "light";
-        setTheme(current === "light" ? "dark" : "light");
+    document.getElementById("themeToggle")?.addEventListener("click", () => {
+      const current = root.getAttribute("data-theme") || "light";
+      setTheme(current === "light" ? "dark" : "light");
+    });
+
+    /* ===== Telegram init ===== */
+    const envNote = document.getElementById("envNote");
+    try {
+      if (tg) { tg.ready(); tg.expand(); envNote.textContent = "Открыто в Telegram WebApp"; }
+      else    { envNote.textContent = "Открыто в обычном браузере (это нормально)"; }
+    } catch (e) { envNote.textContent = "Открыто в браузере"; }
+
+    /* ===== АНИМАЦИИ REVEAL ===== */
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
       });
+    },{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-      // ====== TELEGRAM INIT
-      const envNote = document.getElementById("envNote");
-      try {
-        if (tg) { tg.ready(); tg.expand(); envNote.textContent = "Открыто в Telegram WebApp"; }
-        else    { envNote.textContent = "Открыто в обычном браузере (это нормально)"; }
-      } catch (e) { envNote.textContent = "Открыто в браузере"; }
-
-      // ====== ДАННЫЕ МЕНЮ (при желании меняй названия/цены/фото)
-      const MENU = {
-        salads: {
-          title: "Салаты",
-          items: [
-            {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
-            {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
-            {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
-          ]
-        },
-        hot: {
-          title: "Горячее",
-          items: [
-            {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
-            {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
-            {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
-          ]
-        },
-        desserts: {
-          title: "Десерты",
-          items: [
-            {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
-            {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
-            {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
-          ]
-        },
-        drinks: {
-          title: "Напитки",
-          items: [
-            {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
-            {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
-            {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
-          ]
-        }
-      };
-
-      // ====== ВТОРОЙ УРОВЕНЬ — ПАНЕЛЬ КАТЕГОРИИ (только просмотр)
-      const sheet = document.getElementById('sheet');
-      const sheetTitle = document.getElementById('sheetTitle');
-      const dishGrid = document.getElementById('dishGrid');
-      document.getElementById('backBtn').addEventListener('click', closeSheet);
-
-      function openSheet(catKey){
-        const cat = MENU[catKey]; if (!cat) return;
-        sheetTitle.textContent = cat.title;
-        dishGrid.innerHTML = "";
-        cat.items.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'dish';
-          card.innerHTML = `
-            <div class="pic"><img src="${item.img}" alt="${item.name}" loading="lazy"></div>
-            <div class="body">
-              <div class="name">${item.name}</div>
-              <div class="row"><div class="price">${item.price} ₽</div></div>
-            </div>
-          `;
-          const img = card.querySelector('img');
-          img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
-          dishGrid.appendChild(card);
-        });
-
-        sheet.classList.add('open');
-        sheet.setAttribute('aria-hidden','false');
-        document.body.style.overflow='hidden';
+    /* ===== МЕНЮ ДАННЫЕ (пример) ===== */
+    const MENU = {
+      salads: {
+        title: "Салаты",
+        items: [
+          {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
+          {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
+          {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
+        ]
+      },
+      hot: {
+        title: "Горячее",
+        items: [
+          {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
+          {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
+          {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
+        ]
+      },
+      desserts: {
+        title: "Десерты",
+        items: [
+          {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
+          {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
+          {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
+        ]
+      },
+      drinks: {
+        title: "Напитки",
+        items: [
+          {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
+          {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
+          {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
+        ]
       }
-      function closeSheet(){
-        sheet.classList.remove('open');
-        sheet.setAttribute('aria-hidden','true');
-        document.body.style.overflow='';
-      }
+    };
 
-      // Клик по карточке категории
-      document.querySelectorAll('.cat-card').forEach(a=>{
-        a.addEventListener('click', ()=> openSheet(a.dataset.cat));
+    /* ===== ПАНЕЛЬ КАТЕГОРИИ ===== */
+    const sheet = document.getElementById('sheet');
+    const sheetTitle = document.getElementById('sheetTitle');
+    const dishGrid = document.getElementById('dishGrid');
+    document.getElementById('backBtn').addEventListener('click', closeSheet);
+
+    function openSheet(catKey){
+      const cat = MENU[catKey]; if (!cat) return;
+      sheetTitle.textContent = cat.title;
+      dishGrid.innerHTML = "";
+      cat.items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'dish';
+        card.innerHTML = `
+          <div class="pic"><img src="${item.img}" alt="${item.name}" loading="lazy"></div>
+          <div class="body">
+            <div class="name">${item.name}</div>
+            <div class="row"><div class="price">${item.price} ₽</div></div>
+          </div>`;
+        const img = card.querySelector('img');
+        img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
+        dishGrid.appendChild(card);
       });
+      sheet.classList.add('open');
+      sheet.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+    }
+    function closeSheet(){
+      sheet.classList.remove('open');
+      sheet.setAttribute('aria-hidden','true');
+      document.body.style.overflow='';
+    }
+    document.querySelectorAll('.cat-card').forEach(a=>a.addEventListener('click', ()=> openSheet(a.dataset.cat)));
 
-      // ====== Разное
-      const y = document.getElementById("year");
-      if (y) y.textContent = new Date().getFullYear();
-      console.log("Paradise Mini App loaded. Telegram:", !!tg);
-    })();
+    /* ===== ЛАЙТБОКС ===== */
+    const lightbox = document.getElementById('lightbox');
+    const lbImg = lightbox.querySelector('img');
+    document.getElementById('galleryGrid')?.addEventListener('click', (e)=>{
+      if (e.target.tagName !== 'IMG') return;
+      lbImg.src = e.target.src;
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden','false');
+    });
+    lightbox.addEventListener('click', ()=> {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden','true');
+      lbImg.src = '';
+    });
+
+    /* ===== Прочее ===== */
+    document.getElementById("year").textContent = new Date().getFullYear();
+    console.log("Paradise Mini App loaded. Telegram:", !!tg);
+  })();
   </script>
 </body>
 </html>
