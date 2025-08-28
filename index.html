@@ -59,15 +59,6 @@
       cursor:pointer; transition:transform .15s ease, background .15s ease;
     }
     .dot.active{background:#fff; transform:scale(1.2)}
-    .arrow{
-      position:absolute; top:50%; transform:translateY(-50%);
-      width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.7);
-      background:rgba(0,0,0,.25); color:#fff; display:grid; place-items:center; cursor:pointer;
-      z-index:2; user-select:none;
-    }
-    .arrow:hover{background:rgba(0,0,0,.35)}
-    .arrow.prev{left:10px}
-    .arrow.next{right:10px}
 
     /* ---------- NAV in hero ---------- */
     .hero-nav{margin:12px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
@@ -305,15 +296,14 @@
     const slideSrcs = Array.from({length:6},(_,i)=>`gallery-${i+1}.webp`);
     const slidesWrap = document.getElementById('slides');
     const dotsWrap = document.getElementById('dots');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn'); // может отсутствовать
+    const nextBtn = document.getElementById('nextBtn'); // может отсутствовать
     let slides = [];
     let dots = [];
     let idx = 0;
     let timer = null;
     const INTERVAL = 4500;
 
-    // Загружаем существующие изображения (если файла нет — пропускаем)
     function preload(src){ return new Promise(resolve=>{
       const img = new Image();
       img.onload = ()=>resolve(src);
@@ -324,14 +314,12 @@
     Promise.all(slideSrcs.map(preload)).then(list=>{
       const valid = list.filter(Boolean);
       if (valid.length === 0){
-        // если нет ни одного — скрыть стрелки/точки
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
         dotsWrap.style.display = 'none';
         slidesWrap.innerHTML = '<div class="slide active"><div style="display:grid;place-items:center;height:100%;color:#fff;background:#222">Добавьте файлы gallery-1.webp … gallery-6.webp</div></div>';
         return;
       }
-      // построить слайды и точки
       valid.forEach((src, i)=>{
         const s = document.createElement('div');
         s.className = 'slide' + (i===0 ? ' active':'');
@@ -359,19 +347,17 @@
     }
     function next(){ go(idx+1); }
     function prev(){ go(idx-1); }
-    prevBtn.addEventListener('click', prev);
-    nextBtn.addEventListener('click', next);
+    if (prevBtn) prevBtn.addEventListener('click', prev);
+    if (nextBtn) nextBtn.addEventListener('click', next);
 
     function start(){ stop(); timer = setInterval(next, INTERVAL); }
     function stop(){ if (timer) { clearInterval(timer); timer = null; } }
     function restart(){ stop(); start(); }
 
-    // Пауза при наведении/таче
     const slider = document.getElementById('heroSlider');
     slider.addEventListener('mouseenter', stop);
     slider.addEventListener('mouseleave', start);
 
-    // Свайп
     let touchX = null;
     slider.addEventListener('touchstart', e=>{ touchX = e.touches[0].clientX; stop(); }, {passive:true});
     slider.addEventListener('touchend', e=>{
@@ -383,38 +369,26 @@
 
     /* ===== ДАННЫЕ МЕНЮ ===== */
     const MENU = {
-      salads: {
-        title: "Салаты",
-        items: [
-          {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
-          {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
-          {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
-        ]
-      },
-      hot: {
-        title: "Горячее",
-        items: [
-          {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
-          {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
-          {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
-        ]
-      },
-      desserts: {
-        title: "Десерты",
-        items: [
-          {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
-          {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
-          {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
-        ]
-      },
-      drinks: {
-        title: "Напитки",
-        items: [
-          {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
-          {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
-          {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
-        ]
-      }
+      salads: { title: "Салаты", items: [
+        {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
+        {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
+        {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
+      ]},
+      hot: { title: "Горячее", items: [
+        {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
+        {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
+        {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
+      ]},
+      desserts: { title: "Десерты", items: [
+        {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
+        {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
+        {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
+      ]},
+      drinks: { title: "Напитки", items: [
+        {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
+        {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
+        {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
+      ]}
     };
 
     /* ===== ПАНЕЛЬ КАТЕГОРИИ ===== */
