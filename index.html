@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Paradise — Mini App</title>
-  <meta name="description" content="Paradise — ресторан в Донецке. Меню, бронирование, новости, акции и галерея в мини-приложении Telegram.">
+  <meta name="description" content="Ресторан — ресторан в России. Меню, бронирование, новости, акции и галерея в мини-приложении Telegram.">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -154,7 +154,7 @@
     <header class="header">
       <div class="brand">
         <img src="logo-light.png" alt="" onerror="this.remove()">
-        <span>Paradise</span>
+        <span>Ресторан</span>
       </div>
       <div class="actions">
         <button id="themeToggle" class="btn" type="button">Тема</button>
@@ -234,7 +234,7 @@
                 <span class="badge">Новинка</span>
                 <span class="news-date">20.08</span>
               </div>
-              <h3 style="margin:0 0 6px">Новый авторский десерт «Paradise Gold»</h3>
+              <h3 style="margin:0 0 6px">Новый авторский десерт «Ресторан Gold»</h3>
               <p class="muted">Нежная текстура манго-мусса с ванильным бисквитом. Доступно с этой недели.</p>
             </div>
           </article>
@@ -306,7 +306,7 @@
       <!-- Контакты -->
       <section id="contacts" class="section reveal">
         <h2>Контакты</h2>
-        <p><strong>Адрес:</strong> Донецк, Paradise</p>
+        <p><strong>Адрес:</strong> Россия, Ресторан</p>
         <p><strong>Телефон:</strong> <a href="tel:+79990000000">+7 (999) 000-00-00</a></p>
         <p><strong>Время работы:</strong> 11:00–23:00</p>
         <div class="hero-nav" style="margin-top:10px">
@@ -321,7 +321,7 @@
         <a class="btn" target="_blank" rel="noopener" href="https://t.me/your_paradise_channel">Telegram</a>
         <a class="btn" target="_blank" rel="noopener" href="https://vk.com/your_paradise_vk">VK</a>
       </div>
-      © <span id="year"></span> Paradise. Донецк.
+      © <span id="year"></span> Ресторан. Россия.
     </footer>
   </div>
 
@@ -400,7 +400,7 @@
       valid.forEach((src, i)=>{
         const s = document.createElement('div');
         s.className = 'slide' + (i===0 ? ' active':'');
-        s.innerHTML = `<img src="${src}" alt="Paradise">`;
+        s.innerHTML = `<img src="${src}" alt="Ресторан">`;
         slidesWrap.appendChild(s);
         slides.push(s);
 
@@ -532,7 +532,7 @@
 
     /* ===== Прочее ===== */
     document.getElementById("year").textContent = new Date().getFullYear();
-    console.log("Paradise Mini App loaded. Telegram:", !!tg);
+    console.log("Ресторан Mini App loaded. Telegram:", !!tg);
   })();
   </script>
 </body>
