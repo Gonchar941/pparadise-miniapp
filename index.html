@@ -6,6 +6,17 @@
   <title>Paradise — Mini App</title>
   <meta name="description" content="Ресторан — ресторан в России. Меню, бронирование, новости, акции и галерея в мини-приложении Telegram.">
 
+  <!-- VK Mini Apps bridge (для снятия вечной загрузки во VK) -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <script>
+    // Инициализация VK сразу, чтобы убрать лоадер контейнера
+    try {
+      if (window.vkBridge && typeof vkBridge.send === 'function') {
+        vkBridge.send('VKWebAppInit');
+      }
+    } catch (e) {}
+  </script>
+
   <style>
     :root {
       --bg:#ffffff; --text:#0f0f0f; --muted:#6b7280; --card:#f7f7f8; --border:#e5e7eb; --primary:#111827;
@@ -340,8 +351,9 @@
 
   <script>
   (function () {
-    // Больше НЕ используем window.Telegram.* — детектим только по userAgent
+    // Детектим окружение
     const isTMA = /Telegram/i.test(navigator.userAgent);
+    const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
     const root = document.documentElement;
     const THEME_KEY = "paradise_theme";
 
@@ -350,7 +362,6 @@
       root.setAttribute("data-theme", theme);
       localStorage.setItem(THEME_KEY, theme);
       try {
-        // Раньше здесь было tg.setHeaderColor(...). Теперь просто обновляем логотип.
         const logo = document.querySelector('.brand img');
         if (logo) logo.src = theme === 'dark' ? 'logo-dark.png' : 'logo-light.png';
       } catch (e) {}
@@ -363,10 +374,24 @@
       setTheme(current === "light" ? "dark" : "light");
     });
 
-    /* ===== Среда запуска (бывший Telegram init) ===== */
+    // Синхронизация темы из VK Mini Apps (если есть событие)
+    try {
+      if (window.vkBridge && typeof vkBridge.subscribe === 'function') {
+        vkBridge.subscribe((e) => {
+          if (e?.detail?.type === 'VKWebAppUpdateConfig') {
+            const scheme = e.detail.data?.scheme || '';
+            if (scheme) setTheme(scheme.includes('dark') ? 'dark' : 'light');
+          }
+        });
+      }
+    } catch(e){}
+
+    /* ===== Подпись среды ===== */
     const envNote = document.getElementById("envNote");
     try {
-      envNote.textContent = isTMA ? "Открыто в Telegram WebView" : "Открыто в обычном браузере (это нормально)";
+      envNote.textContent = isVK
+        ? "Открыто во VK Mini Apps"
+        : (isTMA ? "Открыто в Telegram WebView" : "Открыто в обычном браузере (это нормально)");
     } catch (e) {
       envNote.textContent = "Открыто в браузере";
     }
@@ -533,7 +558,7 @@
 
     /* ===== Прочее ===== */
     document.getElementById("year").textContent = new Date().getFullYear();
-    console.log("Ресторан Mini App loaded. In Telegram WebView:", isTMA);
+    console.log("Mini App loaded. Env:", { isVK, isTMA });
   })();
   </script>
 </body>
