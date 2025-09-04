@@ -6,15 +6,20 @@
   <title>Paradise — Mini App</title>
   <meta name="description" content="Ресторан — ресторан в России. Меню, бронирование, новости, акции и галерея в мини-приложении Telegram.">
 
-  <!-- VK Mini Apps bridge (для снятия вечной загрузки во VK) -->
+  <!-- VK Mini Apps bridge (убирает вечную загрузку во VK-контейнере) -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   <script>
-    // Инициализация VK сразу, чтобы убрать лоадер контейнера
-    try {
-      if (window.vkBridge && typeof vkBridge.send === 'function') {
-        vkBridge.send('VKWebAppInit');
-      }
-    } catch (e) {}
+    // Инициируем максимально рано
+    (function initVKBridgeEarly(){
+      try {
+        if (window.vkBridge && typeof vkBridge.send === 'function') {
+          vkBridge.send('VKWebAppInit');
+        } else {
+          // фолбэк: сообщим родителю напрямую (на случай если библиотека не подгрузилась)
+          window.parent && window.parent.postMessage({ type:'VKWebAppInit' }, '*');
+        }
+      } catch (e) {}
+    })();
   </script>
 
   <style>
@@ -351,7 +356,6 @@
 
   <script>
   (function () {
-    // Детектим окружение
     const isTMA = /Telegram/i.test(navigator.userAgent);
     const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
     const root = document.documentElement;
@@ -374,7 +378,7 @@
       setTheme(current === "light" ? "dark" : "light");
     });
 
-    // Синхронизация темы из VK Mini Apps (если есть событие)
+    // Синхронизация темы из VK (если есть)
     try {
       if (window.vkBridge && typeof vkBridge.subscribe === 'function') {
         vkBridge.subscribe((e) => {
@@ -382,6 +386,18 @@
             const scheme = e.detail.data?.scheme || '';
             if (scheme) setTheme(scheme.includes('dark') ? 'dark' : 'light');
           }
+        });
+        // Повторные иниции на всякий случай
+        vkBridge.send('VKWebAppInit').catch(()=>{});
+        document.addEventListener('DOMContentLoaded', ()=>vkBridge.send('VKWebAppInit').catch(()=>{}));
+        window.addEventListener('load', ()=>vkBridge.send('VKWebAppInit').catch(()=>{}));
+      } else {
+        // фолбэк — прямое сообщение родителю
+        document.addEventListener('DOMContentLoaded', ()=>{
+          try { window.parent && window.parent.postMessage({ type:'VKWebAppInit' }, '*'); } catch(e){}
+        });
+        window.addEventListener('load', ()=>{
+          try { window.parent && window.parent.postMessage({ type:'VKWebAppInit' }, '*'); } catch(e){}
         });
       }
     } catch(e){}
@@ -503,10 +519,10 @@
         const card = document.createElement('div');
         card.className = 'dish';
         card.innerHTML = `
-          <div class="pic"><img src="${item.img}" alt="${item.name}" loading="lazy"></div>
+          <div class="pic"><img src="\${item.img}" alt="\${item.name}" loading="lazy"></div>
           <div class="body">
-            <div class="name">${item.name}</div>
-            <div class="row"><div class="price">${item.price} ₽</div></div>
+            <div class="name">\${item.name}</div>
+            <div class="row"><div class="price">\${item.price} ₽</div></div>
           </div>`;
         const img = card.querySelector('img');
         img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
@@ -546,7 +562,6 @@
       const date  = document.getElementById('date').value;
       const time  = document.getElementById('time').value;
 
-      // простая проверка телефона: +7 / 8 / 7 и 10–12 цифр
       const clean = phone.replace(/[^\d+]/g,'');
       const ok = /^(\+7|7|8)?\d{10}$/.test(clean);
       if (!ok){ alert('Проверьте номер телефона, пожалуйста'); return; }
@@ -558,7 +573,7 @@
 
     /* ===== Прочее ===== */
     document.getElementById("year").textContent = new Date().getFullYear();
-    console.log("Mini App loaded. Env:", { isVK, isTMA });
+    console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
   })();
   </script>
 </body>
