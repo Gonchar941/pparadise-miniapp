@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Paradise — Mini App</title>
   <meta name="description" content="Ресторан — ресторан в России. Меню, бронирование, новости, акции и галерея в мини-приложении Telegram.">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     :root {
@@ -341,7 +340,8 @@
 
   <script>
   (function () {
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    // Больше НЕ используем window.Telegram.* — детектим только по userAgent
+    const isTMA = /Telegram/i.test(navigator.userAgent);
     const root = document.documentElement;
     const THEME_KEY = "paradise_theme";
 
@@ -350,8 +350,7 @@
       root.setAttribute("data-theme", theme);
       localStorage.setItem(THEME_KEY, theme);
       try {
-        if (tg) tg.setHeaderColor(theme === "dark" ? "#0b0b0c" : "#ffffff");
-        // смена логотипа по теме
+        // Раньше здесь было tg.setHeaderColor(...). Теперь просто обновляем логотип.
         const logo = document.querySelector('.brand img');
         if (logo) logo.src = theme === 'dark' ? 'logo-dark.png' : 'logo-light.png';
       } catch (e) {}
@@ -364,11 +363,13 @@
       setTheme(current === "light" ? "dark" : "light");
     });
 
-    /* ===== Telegram init ===== */
+    /* ===== Среда запуска (бывший Telegram init) ===== */
     const envNote = document.getElementById("envNote");
-    try { if (tg) { tg.ready(); tg.expand(); envNote.textContent = "Открыто в Telegram WebApp"; }
-          else     { envNote.textContent = "Открыто в обычном браузере (это нормально)"; } }
-    catch (e) { envNote.textContent = "Открыто в браузере"; }
+    try {
+      envNote.textContent = isTMA ? "Открыто в Telegram WebView" : "Открыто в обычном браузере (это нормально)";
+    } catch (e) {
+      envNote.textContent = "Открыто в браузере";
+    }
 
     /* ===== REVEAL анимации ===== */
     const io = new IntersectionObserver((entries)=>{
@@ -532,7 +533,7 @@
 
     /* ===== Прочее ===== */
     document.getElementById("year").textContent = new Date().getFullYear();
-    console.log("Ресторан Mini App loaded. Telegram:", !!tg);
+    console.log("Ресторан Mini App loaded. In Telegram WebView:", isTMA);
   })();
   </script>
 </body>
