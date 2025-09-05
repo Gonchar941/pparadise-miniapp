@@ -199,23 +199,8 @@
       <section id="menu" class="section reveal">
         <h2>Меню</h2>
         <p class="muted">Выберите категорию:</p>
-        <div class="grid">
-          <a class="cat-card" data-cat="salads" href="javascript:void(0)">
-            <img src="menu-salads.webp" alt="Салаты" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
-            <div class="cat-meta"><p class="cat-title">Салаты</p><p class="cat-sub">Лёгкие и свежие</p></div>
-          </a>
-          <a class="cat-card" data-cat="hot" href="javascript:void(0)">
-            <img src="menu-hot.webp" alt="Горячее" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
-            <div class="cat-meta"><p class="cat-title">Горячее</p><p class="cat-sub">Классические хиты</p></div>
-          </a>
-          <a class="cat-card" data-cat="desserts" href="javascript:void(0)">
-            <img src="menu-desserts.webp" alt="Десерты" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
-            <div class="cat-meta"><p class="cat-title">Десерты</p><p class="cat-sub">Нежные сладости</p></div>
-          </a>
-          <a class="cat-card" data-cat="drinks" href="javascript:void(0)">
-            <img src="menu-drinks.webp" alt="Напитки" onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
-            <div class="cat-meta"><p class="cat-title">Напитки</p><p class="cat-sub">Классика и авторские</p></div>
-          </a>
+        <div class="grid" id="catGrid">
+          <!-- карточки категорий будут собраны из таблицы -->
         </div>
       </section>
 
@@ -356,6 +341,14 @@
 
   <script>
   (function () {
+    /* ====== ВАЖНО: вставь сюда свой URL Google Apps Script c токеном ====== */
+    const SHEET_MENU_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgAWR9aGAZegJZ8P-1GWZDtbOONRI_fjH_WmndLq3cuFjIYKQHSCuBypqEnuLHRtf83K_QQZn-jWhUC2C13j0nyxCCeD3YmOC4R9sTXd8XM-OlditW28idyql26Oy9ZuZq_lXsYGp3Wf1QomEQUKQKpyFMBzwK-2CE5-VH71z4Thd5r8ui-NHpd4_DqgPfpO70rzaociw9CsR_HbTAJ9wGrXm9t0oRNI2nYIv3yGyWTWNs1YDzy293MIR77xi2LDxDNX-guSmK_yAY2f5SurC-KbI1MPRGIJlWDrkOXvg-FJnhOd5DSmVlm7-cg2Q&lib=MCwo1uN1gf7ijlewl8hMMOgTOpOlnBpFN
+';
+    /* ===================================================================== */
+
+    const CACHE_KEY = 'paradise_menu_cache_v1';
+    const CACHE_TTL = 60 * 5 * 1000; // 5 минут
+
     const isTMA = /Telegram/i.test(navigator.userAgent);
     const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
     const root = document.documentElement;
@@ -481,31 +474,100 @@
       touchX=null; start();
     });
 
-    /* ===== ДАННЫЕ МЕНЮ ===== */
-    const MENU = {
-      salads: { title: "Салаты", items: [
+    /* ====== РЕЗЕРВНЫЕ ДАННЫЕ (на случай, если сеть/таблица недоступна) ====== */
+    let MENU = {
+      salads: { title: "Салаты", cat_image:"menu-salads.webp", cat_sub:"Лёгкие и свежие", items: [
         {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
         {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
-        {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
+        {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"}
       ]},
-      hot: { title: "Горячее", items: [
+      hot: { title: "Горячее", cat_image:"menu-hot.webp", cat_sub:"Классические хиты", items: [
         {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
         {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
-        {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
+        {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"}
       ]},
-      desserts: { title: "Десерты", items: [
+      desserts: { title: "Десерты", cat_image:"menu-desserts.webp", cat_sub:"Нежные сладости", items: [
         {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
         {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
-        {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
+        {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"}
       ]},
-      drinks: { title: "Напитки", items: [
+      drinks: { title: "Напитки", cat_image:"menu-drinks.webp", cat_sub:"Классика и авторские", items: [
         {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
         {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
-        {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
+        {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"}
       ]}
     };
 
-    /* ===== ПАНЕЛЬ КАТЕГОРИИ ===== */
+    /* ====== ЗАГРУЗКА МЕНЮ ИЗ GOOGLE SHEETS ====== */
+    async function fetchMenuFromSheet() {
+      if (!SHEET_MENU_URL || !SHEET_MENU_URL.startsWith('http')) return null;
+
+      // быстрый кэш в localStorage
+      try {
+        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+          return cached.data;
+        }
+      } catch(_) {}
+
+      const res = await fetch(SHEET_MENU_URL, { method:'GET' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      if (!data || !data.menu) throw new Error('Wrong format');
+
+      // кэшируем
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
+
+      return data;
+    }
+
+    function buildCategoryGrid(menuObj) {
+      const grid = document.getElementById('catGrid');
+      grid.innerHTML = '';
+
+      const keys = Object.keys(menuObj);
+      if (!keys.length) {
+        grid.innerHTML = '<div class="muted">Категории пока не добавлены</div>';
+        return;
+      }
+
+      keys.forEach(key => {
+        const cat = menuObj[key];
+        const img = cat.cat_image || '';
+        const sub = cat.cat_sub || '';
+
+        const card = document.createElement('a');
+        card.href = 'javascript:void(0)';
+        card.className = 'cat-card';
+        card.dataset.cat = key;
+
+        if (img) {
+          card.innerHTML = `
+            <img src="${img}" alt="${cat.title}" loading="lazy">
+            <div class="cat-meta"><p class="cat-title">${cat.title}</p><p class="cat-sub">${sub || ''}</p></div>
+          `;
+        } else {
+          card.classList.add('noimg');
+          card.innerHTML = `
+            <div class="cat-meta"><p class="cat-title">${cat.title}</p><p class="cat-sub">${sub || ''}</p></div>
+          `;
+        }
+
+        const imageEl = card.querySelector('img');
+        if (imageEl) {
+          imageEl.onerror = function(){
+            card.classList.add('noimg');
+            imageEl.remove();
+          };
+        }
+
+        card.addEventListener('click', () => openSheet(key));
+        grid.appendChild(card);
+      });
+    }
+
+    /* ===== ПАНЕЛЬ КАТЕГОРИИ (оставил твою функцию, только исправил шаблон) ===== */
     const sheet = document.getElementById('sheet');
     const sheetTitle = document.getElementById('sheetTitle');
     const dishGrid = document.getElementById('dishGrid');
@@ -513,19 +575,26 @@
 
     function openSheet(catKey){
       const cat = MENU[catKey]; if (!cat) return;
-      sheetTitle.textContent = cat.title;
+      sheetTitle.textContent = cat.title || catKey;
       dishGrid.innerHTML = "";
-      cat.items.forEach(item => {
+      (cat.items || []).forEach(item => {
         const card = document.createElement('div');
         card.className = 'dish';
         card.innerHTML = `
-          <div class="pic"><img src="\${item.img}" alt="\${item.name}" loading="lazy"></div>
+          <div class="pic"><img src="${item.img || ''}" alt="${item.name}" loading="lazy"></div>
           <div class="body">
-            <div class="name">\${item.name}</div>
-            <div class="row"><div class="price">\${item.price} ₽</div></div>
+            <div class="name">${item.name}</div>
+            <div class="row">
+              <div class="price">${(item.price || 0)} ₽</div>
+            </div>
+            ${item.desc ? `<div class="muted" style="font-size:13px">${item.desc}</div>` : ''}
           </div>`;
         const img = card.querySelector('img');
-        img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
+        img.onerror = () => {
+          const pic=card.querySelector('.pic');
+          pic.classList.add('noimg');
+          pic.innerHTML='<span class="muted">Фото скоро</span>';
+        };
         dishGrid.appendChild(card);
       });
       sheet.classList.add('open');
@@ -537,7 +606,7 @@
       sheet.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
     }
-    document.querySelectorAll('.cat-card').forEach(a=>a.addEventListener('click', ()=> openSheet(a.dataset.cat)));
+    // (Навешиваем на грид после загрузки данных — см. ниже)
 
     /* ===== ЛАЙТБОКС ===== */
     const lightbox = document.getElementById('lightbox');
@@ -573,7 +642,22 @@
 
     /* ===== Прочее ===== */
     document.getElementById("year").textContent = new Date().getFullYear();
-    console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
+
+    /* ===== Загрузка меню и инициализация категорий ===== */
+    (async () => {
+      try {
+        const data = await fetchMenuFromSheet();
+        if (data && data.menu) {
+          MENU = data.menu; // подменяем источником из таблицы
+        }
+      } catch (err) {
+        console.warn('Не удалось загрузить меню из таблицы, используем локальные данные.', err);
+      }
+      // Рендерим категории из актуального MENU
+      buildCategoryGrid(MENU);
+      console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
+    })();
+
   })();
   </script>
 </body>
