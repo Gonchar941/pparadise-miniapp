@@ -473,40 +473,105 @@
       // перенакинуть обработчики
       catGrid.querySelectorAll('.cat-card').forEach(a=>a.addEventListener('click', ()=> openSheet(a.dataset.cat)));
     }
-    renderCategories(MENU); // сначала — дефолт, потом подменим из API
+    function renderCategories(menu) {
+  const wrap = document.querySelector('#menu .grid');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  Object.entries(menu).forEach(([key, cat]) => {
+    const a = document.createElement('a');
+    a.className = 'cat-card';
+    a.href = 'javascript:void(0)';
+    a.dataset.cat = key;
+
+    const imgSrc = (cat.cat_image || '').trim();
+    const hasImg = !!imgSrc;
+
+    a.innerHTML = `
+      ${hasImg ? `<img src="${imgSrc}" alt="${cat.title}" loading="lazy">` : ''}
+      <div class="cat-meta">
+        <p class="cat-title">${cat.title || key}</p>
+        <p class="cat-sub">${cat.cat_sub || ''}</p>
+      </div>
+    `;
+
+    if (!hasImg) {
+      a.classList.add('noimg');
+    } else {
+      // Fallback, если картинки категории нет на сервере
+      a.querySelector('img').onerror = function () {
+        const card = this.closest('.cat-card');
+        if (card) {
+          card.classList.add('noimg');
+          this.remove();
+        }
+      };
+    }
+
+    wrap.appendChild(a);
+  });
+}
 
     /* ===== ПАНЕЛЬ КАТЕГОРИИ ===== */
-    const sheet = document.getElementById('sheet');
-    const sheetTitle = document.getElementById('sheetTitle');
-    const dishGrid = document.getElementById('dishGrid');
-    document.getElementById('backBtn').addEventListener('click', closeSheet);
+const sheet = document.getElementById('sheet');
+const sheetTitle = document.getElementById('sheetTitle');
+const dishGrid = document.getElementById('dishGrid');
+document.getElementById('backBtn').addEventListener('click', closeSheet);
 
-    function openSheet(catKey){
-      const cat = MENU[catKey]; if (!cat) return;
-      sheetTitle.textContent = cat.title;
-      dishGrid.innerHTML = "";
-      cat.items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'dish';
-        card.innerHTML = `
-          <div class="pic"><img src="${item.img || ''}" alt="${item.name}" loading="lazy"></div>
-          <div class="body">
-            <div class="name">${item.name}</div>
-            <div class="row"><div class="price">${item.price} ₽</div></div>
-          </div>`;
-        const img = card.querySelector('img');
-        img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
-        dishGrid.appendChild(card);
-      });
-      sheet.classList.add('open');
-      sheet.setAttribute('aria-hidden','false');
-      document.body.style.overflow='hidden';
-    }
-    function closeSheet(){
-      sheet.classList.remove('open');
-      sheet.setAttribute('aria-hidden','true');
-      document.body.style.overflow='';
-    }
+function openSheet(catKey) {
+  const cat = MENU[catKey];
+  if (!cat) return;
+
+  sheetTitle.textContent = cat.title;
+  dishGrid.innerHTML = "";
+
+  cat.items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'dish';
+    card.innerHTML = `
+      <div class="pic">
+        <img src="${item.img || ''}" alt="${item.name}" loading="lazy">
+      </div>
+      <div class="body">
+        <div class="name">${item.name}</div>
+        <div class="row"><div class="price">${item.price} ₽</div></div>
+        ${item.desc ? `<div class="muted">${item.desc}</div>` : ''}
+      </div>
+    `;
+
+    const img = card.querySelector('img');
+    img.onerror = () => {
+      const pic = card.querySelector('.pic');
+      pic.classList.add('noimg');
+      pic.innerHTML = '<span class="muted">Фото скоро</span>';
+    };
+
+    dishGrid.appendChild(card);
+  });
+
+  sheet.classList.add('open');
+  sheet.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSheet() {
+  sheet.classList.remove('open');
+  sheet.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+// Клики по карточкам категорий через делегирование
+(() => {
+  const grid = document.querySelector('#menu .grid');
+  if (!grid) return;
+
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.cat-card');
+    if (!card) return;
+    const key = card.dataset.cat;
+    if (key) openSheet(key);
+  });
+})();
 
     /* ===== ЛАЙТБОКС ===== */
     const lightbox = document.getElementById('lightbox');
@@ -548,19 +613,19 @@ async function loadMenuFromSheet() {
     const res = await fetch(url, { method: 'GET', cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    const data = await res.json();
+    const data = await res.json(); // { menu, updated } или { error }
     if (data && data.menu) {
-      MENU = data.menu;               // сохраняем данные
-      renderCategories(MENU);         // рисуем категории
+      MENU = data.menu;            // перезаписываем дефолт
+      renderCategories(MENU);      // отрисовываем категории
       setEnvNote((envNote?.textContent || 'Готово').replace('Загружаем меню…',''));
-      console.log("Ответ API ок, меню:", data);
+      console.log('Ответ API ок, меню:', data);
     } else {
-      console.warn("Ответ API без меню:", data);
-      setEnvNote("Не удалось загрузить меню — показываем дефолтную версию");
+      console.warn('Ответ API без меню:', data);
+      setEnvNote('Не удалось загрузить меню — показываем дефолтную версию');
     }
   } catch (err) {
-    console.error("Ошибка при загрузке меню:", err);
-    setEnvNote("Ошибка загрузки меню — показываем дефолтную версию");
+    console.error('Ошибка при загрузке меню:', err);
+    setEnvNote('Ошибка загрузки меню — показываем дефолтную версию');
   }
 }
     // Стартуем загрузку сразу после рендера
