@@ -324,9 +324,8 @@
   <script>
   (function () {
     /* ====== ВСТАВЬ СВОИ ДАННЫЕ СЮДА ====== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwxJjfKszBGQkXQm0BvAAXaxI3xGYNp597MHKTsVvjieWRI86vuIkHF5rSBkGkirJrp/exec?sheet=menu&token=gonchar123';
-
-    const TOKEN   = 'gonchar123';
+    const API_URL   = "https://script.google.com/macros/s/AKfycbwxJjfKszBGQkXQm0BvAAXaxI3xGYNp597MHKTsVvjieWRI86vuIkHF5rSBkGkirJrp/exec";
+    const API_TOKEN = "gonchar123";
 
     const isTMA = /Telegram/i.test(navigator.userAgent);
     const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
@@ -542,30 +541,28 @@
     });
 
     /* ===== Подгрузка МЕНЮ из Google Таблицы (Apps Script) ===== */
-    async function loadMenuFromSheet(){
-      if (!API_URL || API_URL.includes('PASTE_')) {
-        console.warn('API_URL не задан — работаем с дефолтным меню');
-        return;
-      }
-      try {
-        setEnvNote('Загружаем меню…');
-        const url = API_URL + '?token=' + encodeURIComponent(TOKEN || '');
-        const res = await fetch(url, { method:'GET', mode:'cors', cache:'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const json = await res.json(); // ожидаем формат { ok:true, menu:{...} } или {ok:false, error:""}
-        if (json.ok && json.menu) {
-          MENU = json.menu;                // подменяем данные
-          renderCategories(MENU);          // перерисовываем категории
-          setEnvNote((envNote?.textContent || 'Готово').replace('Загружаем меню…',''));
-        } else {
-          console.warn('Ответ API без ok/menu:', json);
-          setEnvNote('Не удалось загрузить меню — показываем дефолтную версию');
-        }
-      } catch (err) {
-        console.error('Ошибка загрузки меню:', err);
-        setEnvNote('Нет связи с таблицей — показываем дефолтную версию');
-      }
+async function loadMenuFromSheet() {
+  try {
+    setEnvNote('Загружаем меню…');
+    const url = `${API_URL}?sheet=menu&token=${encodeURIComponent(API_TOKEN)}&_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    if (data && data.menu) {
+      MENU = data.menu;               // сохраняем данные
+      renderCategories(MENU);         // рисуем категории
+      setEnvNote((envNote?.textContent || 'Готово').replace('Загружаем меню…',''));
+      console.log("Ответ API ок, меню:", data);
+    } else {
+      console.warn("Ответ API без меню:", data);
+      setEnvNote("Не удалось загрузить меню — показываем дефолтную версию");
     }
+  } catch (err) {
+    console.error("Ошибка при загрузке меню:", err);
+    setEnvNote("Ошибка загрузки меню — показываем дефолтную версию");
+  }
+}
     // Стартуем загрузку сразу после рендера
     loadMenuFromSheet();
 
