@@ -9,13 +9,11 @@
   <!-- VK Mini Apps bridge (убирает вечную загрузку во VK-контейнере) -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   <script>
-    // Инициируем максимально рано
     (function initVKBridgeEarly(){
       try {
         if (window.vkBridge && typeof vkBridge.send === 'function') {
           vkBridge.send('VKWebAppInit');
         } else {
-          // фолбэк: сообщим родителю напрямую (на случай если библиотека не подгрузилась)
           window.parent && window.parent.postMessage({ type:'VKWebAppInit' }, '*');
         }
       } catch (e) {}
@@ -32,7 +30,6 @@
       --bg:#0b0b0c; --text:#f3f4f6; --muted:#9ca3af; --card:#141417; --border:#22242a; --primary:#f3f4f6;
       --shadow:0 8px 30px rgba(0,0,0,.25);
     }
-
     *{box-sizing:border-box}
     html,body{height:100%}
     html{scroll-behavior:smooth}
@@ -42,24 +39,16 @@
       transition: background .25s ease, color .25s ease;
     }
     a{text-decoration:none;color:inherit}
-
     .page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
-
     .header{
       display:flex;justify-content:space-between;align-items:center;gap:10px;
       padding:12px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:5
     }
-    .brand{
-      display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.4px;font-size:18px;white-space:nowrap
-    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.4px;font-size:18px;white-space:nowrap}
     .brand img{height:28px;display:block}
     .actions{display:flex;gap:8px;align-items:center}
-
     .content{padding:18px 16px 28px;max-width:980px;margin:0 auto}
-    .footer{
-      padding:18px 16px;color:var(--muted);border-top:1px solid var(--border);text-align:center;background:var(--bg)
-    }
-
+    .footer{padding:18px 16px;color:var(--muted);border-top:1px solid var(--border);text-align:center;background:var(--bg)}
     .btn{
       background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;
       display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;
@@ -71,7 +60,6 @@
     .section{margin-top:26px}
     .section h2{margin:0 0 10px;font-size:22px}
     .muted{color:var(--muted)}
-
     .grid{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media(min-width:720px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .card{
@@ -118,7 +106,7 @@
     .cat-card.noimg{background:linear-gradient(140deg, color-mix(in oklab, var(--beige) 55%, transparent), var(--card));display:grid;place-items:end start;padding:12px}
     .cat-card.noimg .cat-title,.cat-card.noimg .cat-sub{color:var(--text);text-shadow:none}
 
-    /* ---------- SHEET (2-й уровень меню) ---------- */
+    /* ---------- SHEET ---------- */
     .sheet{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;transform:translateY(6%);pointer-events:none;transition:opacity .18s ease,transform .22s ease}
     .sheet.open{opacity:1;transform:translateY(0);pointer-events:auto}
     .sheet .bar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);z-index:2}
@@ -135,7 +123,7 @@
     .dish .row{display:flex;justify-content:space-between;align-items:center}
     .price{font-weight:700}
 
-    /* ---------- NEWS ---------- */
+    /* ---------- NEWS / GALLERY / REVIEWS ---------- */
     .news{display:grid;gap:12px}
     .news-card{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:0; overflow:hidden; box-shadow:var(--shadow)}
     .news-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
@@ -143,8 +131,6 @@
     .news-head{display:flex;gap:8px;align-items:center;margin-bottom:6px}
     .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);background:transparent}
     .news-date{font-size:12px;color:var(--muted)}
-
-    /* ---------- GALLERY + LIGHTBOX ---------- */
     .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
     @media(min-width:720px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
     .gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);cursor:pointer; box-shadow:var(--shadow)}
@@ -152,14 +138,7 @@
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
 
-    /* ---------- REVIEWS ---------- */
-    .reviews{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:720px){.reviews{grid-template-columns:repeat(3,1fr)}}
-    .review{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow)}
-    .review .who{font-weight:700;margin:0 0 4px}
-    .stars{letter-spacing:1px}
-
-    /* ---------- REVEAL ANIMATIONS ---------- */
+    /* ---------- REVЕAL ---------- */
     .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease, transform .5s ease}
     .reveal.in{opacity:1;transform:none}
   </style>
@@ -199,8 +178,11 @@
       <section id="menu" class="section reveal">
         <h2>Меню</h2>
         <p class="muted">Выберите категорию:</p>
-        <div class="grid" id="catGrid">
-          <!-- карточки категорий будут собраны из таблицы -->
+
+        <!-- было статически — теперь мы можем подменять из таблицы -->
+        <div id="catGrid" class="grid">
+          <!-- временный плейсхолдер (заменится после загрузки) -->
+          <div class="card"><span class="muted">Загрузка категорий…</span></div>
         </div>
       </section>
 
@@ -341,13 +323,9 @@
 
   <script>
   (function () {
-    /* ====== ВАЖНО: вставь сюда свой URL Google Apps Script c токеном ====== */
-    const SHEET_MENU_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgAWR9aGAZegJZ8P-1GWZDtbOONRI_fjH_WmndLq3cuFjIYKQHSCuBypqEnuLHRtf83K_QQZn-jWhUC2C13j0nyxCCeD3YmOC4R9sTXd8XM-OlditW28idyql26Oy9ZuZq_lXsYGp3Wf1QomEQUKQKpyFMBzwK-2CE5-VH71z4Thd5r8ui-NHpd4_DqgPfpO70rzaociw9CsR_HbTAJ9wGrXm9t0oRNI2nYIv3yGyWTWNs1YDzy293MIR77xi2LDxDNX-guSmK_yAY2f5SurC-KbI1MPRGIJlWDrkOXvg-FJnhOd5DSmVlm7-cg2Q&lib=MCwo1uN1gf7ijlewl8hMMOgTOpOlnBpFN
-';
-    /* ===================================================================== */
-
-    const CACHE_KEY = 'paradise_menu_cache_v1';
-    const CACHE_TTL = 60 * 5 * 1000; // 5 минут
+    /* ====== ВСТАВЬ СВОИ ДАННЫЕ СЮДА ====== */
+    const API_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgAWR9aGAZegJZ8P-1GWZDtbOONRI_fjH_WmndLq3cuFjIYKQHSCuBypqEnuLHRtf83K_QQZn-jWhUC2C13j0nyxCCeD3YmOC4R9sTXd8XM-OlditW28idyql26Oy9ZuZq_lXsYGp3Wf1QomEQUKQKpyFMBzwK-2CE5-VH71z4Thd5r8ui-NHpd4_DqgPfpO70rzaociw9CsR_HbTAJ9wGrXm9t0oRNI2nYIv3yGyWTWNs1YDzy293MIR77xi2LDxDNX-guSmK_yAY2f5SurC-KbI1MPRGIJlWDrkOXvg-FJnhOd5DSmVlm7-cg2Q&lib=MCwo1uN1gf7ijlewl8hMMOgTOpOlnBpFN
+    const TOKEN   = 'gonchar123';
 
     const isTMA = /Telegram/i.test(navigator.userAgent);
     const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
@@ -380,12 +358,10 @@
             if (scheme) setTheme(scheme.includes('dark') ? 'dark' : 'light');
           }
         });
-        // Повторные иниции на всякий случай
         vkBridge.send('VKWebAppInit').catch(()=>{});
         document.addEventListener('DOMContentLoaded', ()=>vkBridge.send('VKWebAppInit').catch(()=>{}));
         window.addEventListener('load', ()=>vkBridge.send('VKWebAppInit').catch(()=>{}));
       } else {
-        // фолбэк — прямое сообщение родителю
         document.addEventListener('DOMContentLoaded', ()=>{
           try { window.parent && window.parent.postMessage({ type:'VKWebAppInit' }, '*'); } catch(e){}
         });
@@ -397,13 +373,10 @@
 
     /* ===== Подпись среды ===== */
     const envNote = document.getElementById("envNote");
+    function setEnvNote(text){ if(envNote) envNote.textContent = text; }
     try {
-      envNote.textContent = isVK
-        ? "Открыто во VK Mini Apps"
-        : (isTMA ? "Открыто в Telegram WebView" : "Открыто в обычном браузере (это нормально)");
-    } catch (e) {
-      envNote.textContent = "Открыто в браузере";
-    }
+      setEnvNote(isVK ? "Открыто во VK Mini Apps" : (isTMA ? "Открыто в Telegram WebView" : "Открыто в обычном браузере (это нормально)"));
+    } catch (e) { setEnvNote("Открыто в браузере"); }
 
     /* ===== REVEAL анимации ===== */
     const io = new IntersectionObserver((entries)=>{
@@ -417,14 +390,9 @@
     const dotsWrap = document.getElementById('dots');
     let slides = []; let dots = []; let idx = 0; let timer = null;
     const INTERVAL = 4500;
-
     function preload(src){ return new Promise(resolve=>{
-      const img = new Image();
-      img.onload = ()=>resolve(src);
-      img.onerror = ()=>resolve(null);
-      img.src = src;
+      const img = new Image(); img.onload=()=>resolve(src); img.onerror=()=>resolve(null); img.src = src;
     });}
-
     Promise.all(slideSrcs.map(preload)).then(list=>{
       const valid = list.filter(Boolean);
       if (!valid.length){
@@ -436,32 +404,22 @@
         const s = document.createElement('div');
         s.className = 'slide' + (i===0 ? ' active':'');
         s.innerHTML = `<img src="${src}" alt="Ресторан">`;
-        slidesWrap.appendChild(s);
-        slides.push(s);
-
+        slidesWrap.appendChild(s); slides.push(s);
         const d = document.createElement('button');
         d.className = 'dot' + (i===0 ? ' active':'');
         d.setAttribute('aria-label', `Перейти к слайду ${i+1}`);
         d.addEventListener('click', ()=>go(i));
-        dotsWrap.appendChild(d);
-        dots.push(d);
+        dotsWrap.appendChild(d); dots.push(d);
       });
       start();
     });
-
-    function setActive(i){
-      slides.forEach((s,k)=>s.classList.toggle('active', k===i));
-      dots.forEach((d,k)=>d.classList.toggle('active', k===i));
-    }
-    function go(to){
-      idx = (to + slides.length) % slides.length;
-      setActive(idx); restart();
-    }
+    function setActive(i){ slides.forEach((s,k)=>s.classList.toggle('active', k===i));
+      dots.forEach((d,k)=>d.classList.toggle('active', k===i)); }
+    function go(to){ idx = (to + slides.length) % slides.length; setActive(idx); restart(); }
     function next(){ go(idx+1); }
     function start(){ stop(); timer = setInterval(next, INTERVAL); }
     function stop(){ if (timer) { clearInterval(timer); timer = null; } }
     function restart(){ stop(); start(); }
-
     const slider = document.getElementById('heroSlider');
     slider.addEventListener('mouseenter', stop);
     slider.addEventListener('mouseleave', start);
@@ -474,100 +432,50 @@
       touchX=null; start();
     });
 
-    /* ====== РЕЗЕРВНЫЕ ДАННЫЕ (на случай, если сеть/таблица недоступна) ====== */
+    /* ====== МЕНЮ: дефолт (на случай, если API недоступен) ====== */
     let MENU = {
-      salads: { title: "Салаты", cat_image:"menu-salads.webp", cat_sub:"Лёгкие и свежие", items: [
+      salads: { key:'salads', title: "Салаты", sub:"Лёгкие и свежие", cat_image:"menu-salads.webp", items: [
         {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
         {id:"salad-caesar",   name:"Цезарь с курицей",  price:420, img:"salad-caesar.webp"},
-        {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"}
+        {id:"salad-olivier",  name:"Оливье",            price:320, img:"salad-olivier.webp"},
       ]},
-      hot: { title: "Горячее", cat_image:"menu-hot.webp", cat_sub:"Классические хиты", items: [
+      hot: { key:'hot', title: "Горячее", sub:"Классические хиты", cat_image:"menu-hot.webp", items: [
         {id:"hot-steak",  name:"Стейк из говядины",     price:980, img:"hot-steak.webp"},
         {id:"hot-pasta",  name:"Паста Карбонара",       price:520, img:"hot-pasta.webp"},
-        {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"}
+        {id:"hot-salmon", name:"Лосось на гриле",       price:890, img:"hot-salmon.webp"},
       ]},
-      desserts: { title: "Десерты", cat_image:"menu-desserts.webp", cat_sub:"Нежные сладости", items: [
+      desserts: { key:'desserts', title: "Десерты", sub:"Нежные сладости", cat_image:"menu-desserts.webp", items: [
         {id:"dessert-cheesecake", name:"Чизкейк Нью-Йорк", price:360, img:"dessert-cheesecake.webp"},
         {id:"dessert-tiramisu",   name:"Тирамису",         price:380, img:"dessert-tiramisu.webp"},
-        {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"}
+        {id:"dessert-macarons",   name:"Макарон ассорти",  price:340, img:"dessert-macarons.webp"},
       ]},
-      drinks: { title: "Напитки", cat_image:"menu-drinks.webp", cat_sub:"Классика и авторские", items: [
+      drinks: { key:'drinks', title: "Напитки", sub:"Классика и авторские", cat_image:"menu-drinks.webp", items: [
         {id:"drink-raf",       name:"Раф ванильный",      price:260, img:"drink-raf.webp"},
         {id:"drink-citrusade", name:"Цитрусовый лимонад",  price:240, img:"drink-citrusade.webp"},
-        {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"}
+        {id:"drink-mojito",    name:"Мохито б/а",         price:250, img:"drink-mojito.webp"},
       ]}
     };
 
-    /* ====== ЗАГРУЗКА МЕНЮ ИЗ GOOGLE SHEETS ====== */
-    async function fetchMenuFromSheet() {
-      if (!SHEET_MENU_URL || !SHEET_MENU_URL.startsWith('http')) return null;
-
-      // быстрый кэш в localStorage
-      try {
-        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-        if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
-          return cached.data;
-        }
-      } catch(_) {}
-
-      const res = await fetch(SHEET_MENU_URL, { method:'GET' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-
-      if (!data || !data.menu) throw new Error('Wrong format');
-
-      // кэшируем
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
-
-      return data;
-    }
-
-    function buildCategoryGrid(menuObj) {
-      const grid = document.getElementById('catGrid');
-      grid.innerHTML = '';
-
-      const keys = Object.keys(menuObj);
-      if (!keys.length) {
-        grid.innerHTML = '<div class="muted">Категории пока не добавлены</div>';
+    const catGrid = document.getElementById('catGrid');
+    function renderCategories(menuObj){
+      const cats = Object.values(menuObj);
+      if (!cats.length){
+        catGrid.innerHTML = '<div class="card"><span class="muted">Нет категорий</span></div>';
         return;
       }
-
-      keys.forEach(key => {
-        const cat = menuObj[key];
-        const img = cat.cat_image || '';
-        const sub = cat.cat_sub || '';
-
-        const card = document.createElement('a');
-        card.href = 'javascript:void(0)';
-        card.className = 'cat-card';
-        card.dataset.cat = key;
-
-        if (img) {
-          card.innerHTML = `
-            <img src="${img}" alt="${cat.title}" loading="lazy">
-            <div class="cat-meta"><p class="cat-title">${cat.title}</p><p class="cat-sub">${sub || ''}</p></div>
-          `;
-        } else {
-          card.classList.add('noimg');
-          card.innerHTML = `
-            <div class="cat-meta"><p class="cat-title">${cat.title}</p><p class="cat-sub">${sub || ''}</p></div>
-          `;
-        }
-
-        const imageEl = card.querySelector('img');
-        if (imageEl) {
-          imageEl.onerror = function(){
-            card.classList.add('noimg');
-            imageEl.remove();
-          };
-        }
-
-        card.addEventListener('click', () => openSheet(key));
-        grid.appendChild(card);
-      });
+      catGrid.innerHTML = cats.map(cat => `
+        <a class="cat-card" data-cat="${cat.key}" href="javascript:void(0)">
+          <img src="${cat.cat_image || ''}" alt="${cat.title}"
+               onerror="this.closest('.cat-card').classList.add('noimg'); this.remove();" loading="lazy">
+          <div class="cat-meta"><p class="cat-title">${cat.title}</p><p class="cat-sub">${cat.sub || ''}</p></div>
+        </a>
+      `).join('');
+      // перенакинуть обработчики
+      catGrid.querySelectorAll('.cat-card').forEach(a=>a.addEventListener('click', ()=> openSheet(a.dataset.cat)));
     }
+    renderCategories(MENU); // сначала — дефолт, потом подменим из API
 
-    /* ===== ПАНЕЛЬ КАТЕГОРИИ (оставил твою функцию, только исправил шаблон) ===== */
+    /* ===== ПАНЕЛЬ КАТЕГОРИИ ===== */
     const sheet = document.getElementById('sheet');
     const sheetTitle = document.getElementById('sheetTitle');
     const dishGrid = document.getElementById('dishGrid');
@@ -575,26 +483,19 @@
 
     function openSheet(catKey){
       const cat = MENU[catKey]; if (!cat) return;
-      sheetTitle.textContent = cat.title || catKey;
+      sheetTitle.textContent = cat.title;
       dishGrid.innerHTML = "";
-      (cat.items || []).forEach(item => {
+      cat.items.forEach(item => {
         const card = document.createElement('div');
         card.className = 'dish';
         card.innerHTML = `
           <div class="pic"><img src="${item.img || ''}" alt="${item.name}" loading="lazy"></div>
           <div class="body">
             <div class="name">${item.name}</div>
-            <div class="row">
-              <div class="price">${(item.price || 0)} ₽</div>
-            </div>
-            ${item.desc ? `<div class="muted" style="font-size:13px">${item.desc}</div>` : ''}
+            <div class="row"><div class="price">${item.price} ₽</div></div>
           </div>`;
         const img = card.querySelector('img');
-        img.onerror = () => {
-          const pic=card.querySelector('.pic');
-          pic.classList.add('noimg');
-          pic.innerHTML='<span class="muted">Фото скоро</span>';
-        };
+        img.onerror = () => { const pic=card.querySelector('.pic'); pic.classList.add('noimg'); pic.innerHTML='<span class="muted">Фото скоро</span>'; };
         dishGrid.appendChild(card);
       });
       sheet.classList.add('open');
@@ -606,7 +507,6 @@
       sheet.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
     }
-    // (Навешиваем на грид после загрузки данных — см. ниже)
 
     /* ===== ЛАЙТБОКС ===== */
     const lightbox = document.getElementById('lightbox');
@@ -640,24 +540,37 @@
       e.target.reset();
     });
 
-    /* ===== Прочее ===== */
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    /* ===== Загрузка меню и инициализация категорий ===== */
-    (async () => {
+    /* ===== Подгрузка МЕНЮ из Google Таблицы (Apps Script) ===== */
+    async function loadMenuFromSheet(){
+      if (!API_URL || API_URL.includes('PASTE_')) {
+        console.warn('API_URL не задан — работаем с дефолтным меню');
+        return;
+      }
       try {
-        const data = await fetchMenuFromSheet();
-        if (data && data.menu) {
-          MENU = data.menu; // подменяем источником из таблицы
+        setEnvNote('Загружаем меню…');
+        const url = API_URL + '?token=' + encodeURIComponent(TOKEN || '');
+        const res = await fetch(url, { method:'GET', mode:'cors', cache:'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json(); // ожидаем формат { ok:true, menu:{...} } или {ok:false, error:""}
+        if (json.ok && json.menu) {
+          MENU = json.menu;                // подменяем данные
+          renderCategories(MENU);          // перерисовываем категории
+          setEnvNote((envNote?.textContent || 'Готово').replace('Загружаем меню…',''));
+        } else {
+          console.warn('Ответ API без ok/menu:', json);
+          setEnvNote('Не удалось загрузить меню — показываем дефолтную версию');
         }
       } catch (err) {
-        console.warn('Не удалось загрузить меню из таблицы, используем локальные данные.', err);
+        console.error('Ошибка загрузки меню:', err);
+        setEnvNote('Нет связи с таблицей — показываем дефолтную версию');
       }
-      // Рендерим категории из актуального MENU
-      buildCategoryGrid(MENU);
-      console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
-    })();
+    }
+    // Стартуем загрузку сразу после рендера
+    loadMenuFromSheet();
 
+    /* ===== Прочее ===== */
+    document.getElementById("year").textContent = new Date().getFullYear();
+    console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
   })();
   </script>
 </body>
