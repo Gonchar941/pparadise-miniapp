@@ -284,7 +284,7 @@
         <p><strong>Телефон:</strong> <a href="tel:+79990000000">+7 (999) 000-00-00</a></p>
         <p><strong>Время работы:</strong> 11:00–23:00</p>
         <div class="hero-nav" style="margin-top:10px">
-          <a class="btn" target="_self" href="#booking">Забронировать</a>
+          <a class="btn" href="#booking">Забронировать</a>
         </div>
       </section>
     </main>
@@ -316,7 +316,6 @@
     const API_TOKEN = "gonchar123";
 
     /* VK окружение */
-    const isVK  = true;   // фиксируем, что приложение во VK
     const root = document.documentElement;
     const THEME_KEY = "paradise_theme";
 
@@ -528,14 +527,8 @@
       document.body.style.overflow='';
     }
 
-    /* (Опционально) делегирование — отключено: iOS иногда конфликтует */
-    // catGrid.addEventListener('click', (e)=>{
-    //   const card = e.target.closest?.('.cat-card');
-    //   if (!card) return;
-    //   e.preventDefault(); e.stopPropagation();
-    //   const key = card.dataset.cat;
-    //   if (key) openSheet(key);
-    // });
+    /* Убрали делегирование кликов по catGrid (мешает iOS) */
+    // catGrid.addEventListener('click', ... );
 
     /* ЛАЙТБОКС */
     const lightbox = document.getElementById('lightbox');
@@ -598,20 +591,47 @@
     renderCategories(MENU);
     loadMenuFromSheet();
 
-    /* Глобальный клик-гард под VK iOS */
+    /* ===== HARD FIX: iOS VK tap interceptor (capture) =====
+       На фазе захвата блокируем любые клики/тачи из .cat-card,
+       чтобы VK-вебвью НЕ отправлял их в свой браузер. */
+    let tapLock = false; // анти дабл-тап (click после touchend)
+    function closestCatCard(el){ return el && el.closest ? el.closest('.cat-card') : null; }
+
+    document.addEventListener('touchstart', (e)=>{
+      const card = closestCatCard(e.target);
+      if (!card) return;
+      // Блокируем жесты ещё до VK
+      e.preventDefault(); e.stopPropagation();
+    }, { capture:true, passive:false });
+
+    document.addEventListener('touchend', (e)=>{
+      const card = closestCatCard(e.target);
+      if (!card) return;
+      e.preventDefault(); e.stopPropagation();
+      const key = card.getAttribute('data-cat');
+      if (key){ tapLock = true; openSheet(key); setTimeout(()=>tapLock=false, 350); }
+    }, { capture:true, passive:false });
+
+    document.addEventListener('click', (e)=>{
+      const card = closestCatCard(e.target);
+      if (!card) return;
+      // если уже обработали touchend — съедаем click
+      if (tapLock){ e.preventDefault(); e.stopPropagation(); return; }
+      e.preventDefault(); e.stopPropagation();
+      const key = card.getAttribute('data-cat');
+      if (key) openSheet(key);
+    }, { capture:true, passive:false });
+
+    /* Глобальный клик-гард под VK iOS для <a> */
     document.addEventListener('click', (e)=>{
       const a = e.target.closest && e.target.closest('a[href]');
       if (!a) return;
-
       const href = a.getAttribute('href') || '';
       const isAnchor = href.startsWith('#');
       const isSafeProto = href.startsWith('tel:') || href.startsWith('mailto:');
-
       if (!isAnchor && !isSafeProto) {
-        // блокируем внезапный уход из webview
-        e.preventDefault();
-        e.stopPropagation();
-        // если нужно — можно явно открыть внешнюю ссылку через VK:
+        e.preventDefault(); e.stopPropagation();
+        // при желании можно явно открыть внешку:
         // window.vkBridge?.send?.('VKWebAppOpenURL', { url: href }).catch(()=>{});
       }
     }, { capture:true, passive:false });
