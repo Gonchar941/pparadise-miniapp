@@ -9,7 +9,7 @@
   <!-- ВСЕ ССЫЛКИ ОТКРЫВАЕМ ВНУТРИ WEBVIEW -->
   <base target="_self">
 
-  <!-- VK Mini Apps bridge (убирает вечную загрузку во VK-контейнере) -->
+  <!-- VK Mini Apps bridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
   <script>
     (function initVKBridgeEarly(){
@@ -24,13 +24,12 @@
   </script>
 
   <style>
-    :root {
+    :root{
       --bg:#ffffff; --text:#0f0f0f; --muted:#6b7280; --card:#f7f7f8; --border:#e5e7eb; --primary:#111827;
       --brand:#1e7b3d; --beige:#e5c991; --shadow:0 8px 30px rgba(0,0,0,.06);
-      --radius:14px;
-      --safe-top: env(safe-area-inset-top, 0px);
+      --radius:14px; --safe-top: env(safe-area-inset-top, 0px);
     }
-    html[data-theme="dark"] {
+    html[data-theme="dark"]{
       --bg:#0b0b0c; --text:#f3f4f6; --muted:#9ca3af; --card:#141417; --border:#22242a; --primary:#f3f4f6;
       --shadow:0 8px 30px rgba(0,0,0,.25);
     }
@@ -38,38 +37,31 @@
     html,body{height:100%}
     html{scroll-behavior:smooth}
     body{
-      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      background:var(--bg); color:var(--text);
-      transition: background .25s ease, color .25s ease;
+      margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:var(--bg);color:var(--text);transition:background .25s,color .25s;
     }
     a{text-decoration:none;color:inherit}
 
     .page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
 
-    /* ---------- HEADER (центрируем бренд, безопасная зона) ---------- */
+    /* ---------- HEADER (кнопка темы слева, бренд по центру) ---------- */
     .header{
-      position:sticky; top:0; z-index:5;
-      background:var(--bg);
-      padding: calc(8px + var(--safe-top)) 16px 8px;
-      border-bottom:1px solid var(--border);
-      display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap:10px;
+      position:sticky;top:0;z-index:5;background:var(--bg);
+      padding:calc(8px + var(--safe-top)) 16px 8px;border-bottom:1px solid var(--border);
+      display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;
     }
+    .actions-left{grid-column:1;justify-self:start;display:flex;align-items:center}
     .brand{
-      grid-column:2; /* центр */
-      display:flex;align-items:center;gap:10px;
-      font-weight:800;letter-spacing:.4px;font-size:18px;white-space:nowrap;
-      justify-self:center;
+      grid-column:2;justify-self:center;
+      display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;font-size:18px;white-space:nowrap
     }
     .brand img{height:28px;display:block}
-    .actions{
-      grid-column:3; justify-self:end; display:flex; gap:8px; align-items:center;
-    }
+    .actions-right{grid-column:3;justify-self:end}
+
     /* круглая кнопка темы */
     #themeToggle{
-      width:38px;height:38px;border-radius:999px;
-      display:inline-grid;place-items:center;
-      padding:0;border:1px solid var(--border);background:var(--card);
-      box-shadow:var(--shadow);
+      width:38px;height:38px;border-radius:999px;display:inline-grid;place-items:center;
+      padding:0;border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow);font-size:18px
     }
 
     .content{padding:18px 16px 28px;max-width:980px;margin:0 auto}
@@ -77,52 +69,42 @@
 
     .btn{
       background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 14px;
-      display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;
-      transition:background .15s ease,border-color .15s ease,transform .12s ease
+      display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;transition:background .15s,border-color .15s,transform .12s
     }
-    .btn:hover{background:var(--card)}
-    .btn:active{transform:scale(.98)}
+    .btn:hover{background:var(--card)} .btn:active{transform:scale(.98)}
     .btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .section{margin-top:26px}
-    .section h2{margin:0 0 10px;font-size:22px}
+    .section{margin-top:26px} .section h2{margin:0 0 10px;font-size:22px}
     .muted{color:var(--muted)}
 
     .grid{margin-top:22px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media(min-width:720px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .card{
-      background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;min-height:110px;
-      transition:transform .16s ease, background .2s ease; box-shadow:var(--shadow)
-    }
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;min-height:110px;transition:transform .16s,background .2s;box-shadow:var(--shadow)}
     .card:hover{transform:translateY(-2px)}
-    input,select,textarea{
-      background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;width:100%;outline:none
-    }
+    input,select,textarea{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14px;width:100%;outline:none}
     form{display:grid;gap:10px}
     .notice{margin-top:10px;font-size:13px;color:var(--muted);text-align:center}
 
     /* ---------- HERO SLIDER ---------- */
     .hero{margin-top:8px}
-    .slider{
-      position:relative; border-radius:var(--radius); overflow:hidden; background:var(--card);
-      height:44vh; min-height:260px; max-height:520px; display:grid; place-items:center; box-shadow:var(--shadow)
-    }
-    .slides{position:absolute; inset:0; display:grid}
-    .slide{grid-area:1/1; opacity:0; transform:scale(1.02); transition:opacity .5s ease, transform .6s ease; background:#000}
-    .slide.active{opacity:1; transform:none}
+    .slider{position:relative;border-radius:var(--radius);overflow:hidden;background:var(--card);height:44vh;min-height:260px;max-height:520px;display:grid;place-items:center;box-shadow:var(--shadow)}
+    .slides{position:absolute;inset:0;display:grid}
+    .slide{grid-area:1/1;opacity:0;transform:scale(1.02);transition:opacity .5s,transform .6s;background:#000}
+    .slide.active{opacity:1;transform:none}
     .slide img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.02)}
-    .slider::after{content:""; position:absolute; inset:auto 0 0 0; height:34%;
-      background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.35)); pointer-events:none}
-    .slider-nav{position:absolute; left:0; right:0; bottom:12px; display:flex; gap:6px; justify-content:center; z-index:2}
-    .dot{width:8px; height:8px; border-radius:50%; border:1px solid rgba(255,255,255,.9); background:rgba(255,255,255,.25);
-      cursor:pointer; transition:transform .15s ease, background .15s ease}
-    .dot.active{background:#fff; transform:scale(1.2)}
-
+    .slider::after{content:"";position:absolute;inset:auto 0 0 0;height:34%;background:linear-gradient(to bottom,rgba(0,0,0,0),rgba(0,0,0,.35));pointer-events:none}
+    .slider-nav{position:absolute;left:0;right:0;bottom:12px;display:flex;gap:6px;justify-content:center;z-index:2}
+    .dot{width:8px;height:8px;border-radius:50%;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.25);cursor:pointer;transition:transform .15s,background .15s}
+    .dot.active{background:#fff;transform:scale(1.2)}
     .hero-nav{margin:12px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .hero-note{margin-top:8px}
 
-    /* ---------- Category cards ---------- */
-    .cat-card{position:relative;overflow:hidden;border-radius:var(--radius);border:1px solid var(--border);background:var(--card);aspect-ratio:3/2;isolation:isolate; box-shadow:var(--shadow)}
-    .cat-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+    /* ---------- Category cards (теперь это кнопки) ---------- */
+    .cat-card{
+      appearance:none;-webkit-appearance:none;cursor:pointer;padding:0;width:100%;
+      position:relative;overflow:hidden;border-radius:var(--radius);border:1px solid var(--border);
+      background:var(--card);aspect-ratio:3/2;isolation:isolate;box-shadow:var(--shadow)
+    }
+    .cat-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
     .cat-card::after{content:"";position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,.42), rgba(0,0,0,0) 55%);opacity:.9;mix-blend-mode:multiply}
     .cat-card:hover img{transform:scale(1.04)}
     .cat-meta{position:absolute;left:12px;right:12px;bottom:12px;z-index:1;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -132,14 +114,14 @@
     .cat-card.noimg .cat-title,.cat-card.noimg .cat-sub{color:var(--text);text-shadow:none}
 
     /* ---------- SHEET ---------- */
-    .sheet{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;transform:translateY(6%);pointer-events:none;transition:opacity .18s ease,transform .22s ease}
+    .sheet{position:fixed;inset:0;background:var(--bg);z-index:50;opacity:0;transform:translateY(6%);pointer-events:none;transition:opacity .18s,transform .22s}
     .sheet.open{opacity:1;transform:translateY(0);pointer-events:auto}
     .sheet .bar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg);z-index:2}
     .sheet .title{font-weight:700}
     .sheet .wrap{max-width:980px;margin:0 auto;padding:14px 16px 24px}
     .dish-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     @media(min-width:720px){.dish-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    .dish{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);display:flex;flex-direction:column; box-shadow:var(--shadow)}
+    .dish{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);display:flex;flex-direction:column;box-shadow:var(--shadow)}
     .dish .pic{position:relative;aspect-ratio:4/3;background:var(--card)}
     .dish .pic img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.03)}
     .dish .pic.noimg{display:grid;place-items:center;background:linear-gradient(140deg, color-mix(in oklab, var(--beige) 55%, transparent), var(--card))}
@@ -150,7 +132,7 @@
 
     /* ---------- NEWS / GALLERY / REVIEWS ---------- */
     .news{display:grid;gap:12px}
-    .news-card{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:0; overflow:hidden; box-shadow:var(--shadow)}
+    .news-card{border:1px solid var(--border);background:var(--card);border-radius:var(--radius);padding:0;overflow:hidden;box-shadow:var(--shadow)}
     .news-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
     .news-body{padding:14px}
     .news-head{display:flex;gap:8px;align-items:center;margin-bottom:6px}
@@ -158,27 +140,27 @@
     .news-date{font-size:12px;color:var(--muted)}
     .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
     @media(min-width:720px){.gallery{grid-template-columns:repeat(4,minmax(0,1fr))}}
-    .gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);cursor:pointer; box-shadow:var(--shadow)}
+    .gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;border:1px solid var(--border);cursor:pointer;box-shadow:var(--shadow)}
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:70}
     .lightbox.open{display:flex}
-    .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 
     /* ---------- REVEAL ---------- */
-    .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease, transform .5s ease}
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
     .reveal.in{opacity:1;transform:none}
   </style>
 </head>
 <body>
   <div class="page">
     <header class="header">
-      <div></div> <!-- левый «невидимый» столбец для центрирования -->
+      <div class="actions-left">
+        <button id="themeToggle" class="btn" type="button" aria-label="Сменить тему">🌓</button>
+      </div>
       <div class="brand">
         <img src="logo-light.png" alt="" onerror="this.remove()">
         <span>Ресторан</span>
       </div>
-      <div class="actions">
-        <button id="themeToggle" class="btn" type="button" aria-label="Сменить тему">🌓</button>
-      </div>
+      <div class="actions-right"></div>
     </header>
 
     <main class="content">
@@ -235,10 +217,7 @@
           <article class="news-card">
             <img class="news-img" src="news-1.webp" alt="" loading="lazy" onerror="this.remove()">
             <div class="news-body">
-              <div class="news-head">
-                <span class="badge">Новинка</span>
-                <span class="news-date">20.08</span>
-              </div>
+              <div class="news-head"><span class="badge">Новинка</span><span class="news-date">20.08</span></div>
               <h3 style="margin:0 0 6px">Новый авторский десерт «Ресторан Gold»</h3>
               <p class="muted">Нежная текстура манго-мусса с ванильным бисквитом. Доступно с этой недели.</p>
             </div>
@@ -246,10 +225,7 @@
           <article class="news-card">
             <img class="news-img" src="news-2.webp" alt="" loading="lazy" onerror="this.remove()">
             <div class="news-body">
-              <div class="news-head">
-                <span class="badge">Событие</span>
-                <span class="news-date">22.08</span>
-              </div>
+              <div class="news-head"><span class="badge">Событие</span><span class="news-date">22.08</span></div>
               <h3 style="margin:0 0 6px">Живая музыка в пятницу</h3>
               <p class="muted">Акустический вечер, начало в 19:00. Бронь столиков — во вкладке «Бронирование».</p>
             </div>
@@ -290,21 +266,9 @@
       <section id="reviews" class="section reveal">
         <h2>Отзывы</h2>
         <div class="reviews">
-          <div class="review">
-            <p class="who">Марина</p>
-            <p class="stars">★★★★★</p>
-            <p class="muted">Очень уютно, кухня на высоте. Официанты внимательные, вернусь ещё!</p>
-          </div>
-          <div class="review">
-            <p class="who">Игорь</p>
-            <p class="stars">★★★★★</p>
-            <p class="muted">Понравились горячие блюда и подача. Хорошая винная карта.</p>
-          </div>
-          <div class="review">
-            <p class="who">Алина</p>
-            <p class="stars">★★★★☆</p>
-            <p class="muted">Десерты — огонь! Немного людно в пятницу, лучше бронировать заранее.</p>
-          </div>
+          <div class="review"><p class="who">Марина</p><p class="stars">★★★★★</p><p class="muted">Очень уютно, кухня на высоте. Официанты внимательные, вернусь ещё!</p></div>
+          <div class="review"><p class="who">Игорь</p><p class="stars">★★★★★</p><p class="muted">Понравились горячие блюда и подача. Хорошая винная карта.</p></div>
+          <div class="review"><p class="who">Алина</p><p class="stars">★★★★☆</p><p class="muted">Десерты — огонь! Немного людно в пятницу, лучше бронировать заранее.</p></div>
         </div>
       </section>
 
@@ -322,7 +286,7 @@
     </main>
 
     <footer class="footer">
-      <div style="display:flex; gap:10px; justify-content:center; margin-bottom:8px">
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:8px">
         <a class="btn" target="_blank" rel="noopener" href="https://t.me/your_paradise_channel">Telegram</a>
         <a class="btn" target="_blank" rel="noopener" href="https://vk.com/your_paradise_vk">VK</a>
       </div>
@@ -336,9 +300,7 @@
       <button id="backBtn" class="btn" type="button">← Назад</button>
       <div class="title" id="sheetTitle">Категория</div>
     </div>
-    <div class="wrap">
-      <div id="dishGrid" class="dish-grid"></div>
-    </div>
+    <div class="wrap"><div id="dishGrid" class="dish-grid"></div></div>
   </div>
 
   <!-- ЛАЙТБОКС -->
@@ -424,7 +386,7 @@
       }
       valid.forEach((src, i)=>{
         const s = document.createElement('div');
-        s.className = 'slide' + (i===0 ? ' active':'');
+        s.className = 'slide' + (i===0 ? ' active':'' );
         s.innerHTML = `<img src="${src}" alt="Ресторан">`;
         slidesWrap.appendChild(s); slides.push(s);
         const d = document.createElement('button');
@@ -454,7 +416,7 @@
       touchX=null; start();
     });
 
-    /* ====== ДЕФОЛТНОЕ МЕНЮ (на случай, если API недоступен) ====== */
+    /* ====== ДЕФОЛТНОЕ МЕНЮ ====== */
     let MENU = {
       salads: { key:'salads', title: "Салаты", sub:"Лёгкие и свежие", cat_image:"menu-salads.webp", items: [
         {id:"salad-greek",    name:"Греческий",         price:350, img:"salad-greek.webp"},
@@ -480,7 +442,7 @@
 
     const catGrid = document.getElementById('catGrid');
 
-    /* Отрисовка категорий (используется и для дефолта, и для данных из API) */
+    /* Отрисовка категорий (кнопки, не ссылки — чтобы WebView НЕ открывал браузер) */
     function renderCategories(menuObj){
       const cats = Object.entries(menuObj);
       if (!cats.length){
@@ -489,14 +451,14 @@
       }
       catGrid.innerHTML = '';
       cats.forEach(([key, cat])=>{
-        const a = document.createElement('a');
-        a.className = 'cat-card';
-        a.href = '#';                 // важно: НЕ javascript:void(0)
-        a.dataset.cat = key;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cat-card';
+        btn.dataset.cat = key;
 
         const imgSrc = (cat.cat_image || '').trim();
         const hasImg = !!imgSrc;
-        a.innerHTML = `
+        btn.innerHTML = `
           ${hasImg ? `<img src="${imgSrc}" alt="${cat.title}" loading="lazy">` : ''}
           <div class="cat-meta">
             <p class="cat-title">${cat.title || key}</p>
@@ -504,13 +466,13 @@
           </div>
         `;
         if (!hasImg) {
-          a.classList.add('noimg');
+          btn.classList.add('noimg');
         } else {
-          a.querySelector('img').onerror = function () {
+          btn.querySelector('img').onerror = function () {
             const card = this.closest('.cat-card'); if (card){ card.classList.add('noimg'); this.remove(); }
           };
         }
-        catGrid.appendChild(a);
+        catGrid.appendChild(btn);
       });
     }
 
@@ -553,12 +515,11 @@
       document.body.style.overflow='';
     }
 
-    /* Клики по карточкам категорий через делегирование (и блокируем переход по href) */
+    /* Делегирование клика по .cat-card */
     catGrid.addEventListener('click', (e)=>{
       const card = e.target.closest('.cat-card');
       if (!card) return;
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       const key = card.dataset.cat;
       if (key) openSheet(key);
     });
