@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="format-detection" content="telephone=no" />
+  <!-- CSP: не уходим со страницы по кликам -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; img-src 'self' https: data: blob:; script-src 'self' https://unpkg.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https:; frame-ancestors *; form-action 'self'; navigate-to 'self'">
   <title>Paradise — Mini App</title>
   <meta name="description" content="Ресторан — ресторан в России. Меню, бронирование, новости, акции и галерея в мини-приложении.">
 
@@ -39,12 +42,13 @@
     body{
       margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
       background:var(--bg);color:var(--text);transition:background .25s,color .25s;
+      -webkit-tap-highlight-color: transparent;
     }
     a{text-decoration:none;color:inherit}
 
     .page{min-height:100%;display:grid;grid-template-rows:auto 1fr auto}
 
-    /* ---------- HEADER (кнопка темы слева, бренд по центру) ---------- */
+    /* ---------- HEADER ---------- */
     .header{
       position:sticky;top:0;z-index:5;background:var(--bg);
       padding:calc(8px + var(--safe-top)) 16px 8px;border-bottom:1px solid var(--border);
@@ -58,7 +62,6 @@
     .brand img{height:28px;display:block}
     .actions-right{grid-column:3;justify-self:end}
 
-    /* круглая кнопка темы */
     #themeToggle{
       width:38px;height:38px;border-radius:999px;display:inline-grid;place-items:center;
       padding:0;border:1px solid var(--border);background:var(--card);box-shadow:var(--shadow);font-size:18px
@@ -98,7 +101,7 @@
     .hero-nav{margin:12px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .hero-note{margin-top:8px}
 
-    /* ---------- Category cards (теперь это кнопки) ---------- */
+    /* ---------- Category cards (кнопки) ---------- */
     .cat-card{
       appearance:none;-webkit-appearance:none;cursor:pointer;padding:0;width:100%;
       position:relative;overflow:hidden;border-radius:var(--radius);border:1px solid var(--border);
@@ -145,7 +148,6 @@
     .lightbox.open{display:flex}
     .lightbox img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 
-    /* ---------- REVEAL ---------- */
     .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s}
     .reveal.in{opacity:1;transform:none}
   </style>
@@ -308,14 +310,18 @@
 
   <script>
   (function () {
-    /* ====== ТВОИ ДАННЫЕ ДЛЯ API ====== */
+    /* ====== API ====== */
     const API_URL   = "https://script.google.com/macros/s/AKfycbwxJjfKszBGQkXQm0BvAAXaxI3xGYNp597MHKTsVvjieWRI86vuIkHF5rSBkGkirJrp/exec";
     const API_TOKEN = "gonchar123";
 
-    const isTMA = /Telegram/i.test(navigator.userAgent);
+    const isTMA = /Telegram/i.test(navigator.userAgent) || !!(window.Telegram && window.Telegram.WebApp);
     const isVK  = /(^|\.)vk\.(com|ru)/i.test(document.referrer);
     const root = document.documentElement;
     const THEME_KEY = "paradise_theme";
+
+    // Telegram/VK готовность (мягко)
+    try { window.Telegram?.WebApp?.ready?.(); } catch(e) {}
+    try { window.Telegram?.WebApp?.expand?.(); } catch(e) {}
 
     /* ===== ТЕМА ===== */
     function setTheme(theme) {
@@ -442,7 +448,7 @@
 
     const catGrid = document.getElementById('catGrid');
 
-    /* Отрисовка категорий (кнопки, не ссылки — чтобы WebView НЕ открывал браузер) */
+    /* РЕНДЕР категорий — КНОПКИ, с прямым обработчиком */
     function renderCategories(menuObj){
       const cats = Object.entries(menuObj);
       if (!cats.length){
@@ -455,16 +461,19 @@
         btn.type = 'button';
         btn.className = 'cat-card';
         btn.dataset.cat = key;
+        btn.setAttribute('role','button');
+        btn.setAttribute('tabindex','0');
 
         const imgSrc = (cat.cat_image || '').trim();
         const hasImg = !!imgSrc;
         btn.innerHTML = `
-          ${hasImg ? `<img src="${imgSrc}" alt="${cat.title}" loading="lazy">` : ''}
+          ${hasImg ? `<img src="${imgSrc}" alt="${cat.title}" loading="lazy" draggable="false">` : ''}
           <div class="cat-meta">
             <p class="cat-title">${cat.title || key}</p>
             <p class="cat-sub">${cat.cat_sub || cat.sub || ''}</p>
           </div>
         `;
+
         if (!hasImg) {
           btn.classList.add('noimg');
         } else {
@@ -472,6 +481,14 @@
             const card = this.closest('.cat-card'); if (card){ card.classList.add('noimg'); this.remove(); }
           };
         }
+
+        // Прямой обработчик клика/клавиш — минуем баги делегирования в WebView
+        const open = ()=> openSheet(key);
+        btn.addEventListener('click', (ev)=>{ ev.preventDefault(); ev.stopPropagation(); open(); }, { passive:false });
+        btn.addEventListener('keydown', (ev)=>{
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); }
+        });
+
         catGrid.appendChild(btn);
       });
     }
@@ -493,7 +510,7 @@
         const card = document.createElement('div');
         card.className = 'dish';
         card.innerHTML = `
-          <div class="pic"><img src="${item.img || ''}" alt="${item.name}" loading="lazy"></div>
+          <div class="pic"><img src="${item.img || ''}" alt="${item.name}" loading="lazy" draggable="false"></div>
           <div class="body">
             <div class="name">${item.name}</div>
             <div class="row"><div class="price">${item.price} ₽</div></div>
@@ -515,10 +532,11 @@
       document.body.style.overflow='';
     }
 
-    /* Делегирование клика по .cat-card */
+    /* Делегирование клика по .cat-card — оставляем (но уже не требуется) */
     catGrid.addEventListener('click', (e)=>{
-      const card = e.target.closest('.cat-card');
+      const card = e.target.closest?.('.cat-card');
       if (!card) return;
+      // если по какой-то причине прямой обработчик не сработал
       e.preventDefault(); e.stopPropagation();
       const key = card.dataset.cat;
       if (key) openSheet(key);
@@ -529,10 +547,11 @@
     const lbImg = lightbox.querySelector('img');
     document.getElementById('galleryGrid')?.addEventListener('click', (e)=>{
       if (e.target.tagName !== 'IMG') return;
+      e.preventDefault();
       lbImg.src = e.target.src;
       lightbox.classList.add('open');
       lightbox.setAttribute('aria-hidden','false');
-    });
+    }, { passive:false });
     lightbox.addEventListener('click', ()=> {
       lightbox.classList.remove('open');
       lightbox.setAttribute('aria-hidden','true');
@@ -556,7 +575,7 @@
       e.target.reset();
     });
 
-    /* ===== Подгрузка МЕНЮ из Google Таблицы (Apps Script) ===== */
+    /* ===== Подгрузка МЕНЮ из Google Таблицы ===== */
     async function loadMenuFromSheet() {
       try {
         setEnvNote('Загружаем меню…');
@@ -566,8 +585,8 @@
 
         const data = await res.json(); // { menu, updated } или { error }
         if (data && data.menu) {
-          MENU = data.menu;            // перезаписываем дефолт
-          renderCategories(MENU);      // отрисовываем категории
+          MENU = data.menu;
+          renderCategories(MENU);
           setEnvNote((envNote?.textContent || 'Готово').replace('Загружаем меню…',''));
           console.log('Ответ API ок, меню:', data);
         } else {
@@ -581,11 +600,32 @@
         renderCategories(MENU);
       }
     }
-    // рендерим дефолт (на всякий) и сразу запрашиваем API
+    // дефолтный рендер и запрос API
     renderCategories(MENU);
     loadMenuFromSheet();
 
-    /* ===== Прочее ===== */
+    /* ===== Глобальный клик-гард: ни один тап по IMG/пустым ссылкам не должен уводить из WebView ===== */
+    document.addEventListener('click', (e)=>{
+      const a = e.target.closest && e.target.closest('a[href]');
+      if (a) {
+        const href = a.getAttribute('href') || '';
+        // Разрешаем только якоря внутри (начинаются с #) или tel:, mailto:
+        const isAnchor = href.startsWith('#');
+        const isSafeProto = href.startsWith('tel:') || href.startsWith('mailto:');
+        if (!isAnchor && !isSafeProto && isTMA) {
+          // в Telegram — открываем внешние ссылки ОСОЗНАННО (если нужно)
+          // здесь можно заменить на Telegram.WebApp.openLink(href), если захочешь
+          return; // даём уйти только тем ссылкам, которые ты явно сделал target="_blank" (например, навигатор)
+        }
+      } else {
+        // Клик не по ссылке — точно не навигируем
+        if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'PICTURE')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    }, { capture:true, passive:false });
+
     document.getElementById("year").textContent = new Date().getFullYear();
     console.log("Mini App loaded. Env:", { isVK, isTMA, hasBridge: !!window.vkBridge });
   })();
